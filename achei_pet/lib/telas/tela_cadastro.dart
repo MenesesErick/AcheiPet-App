@@ -27,7 +27,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
   final _descricaoController = TextEditingController();
 
   StatusPet _statusSelecionado = StatusPet.PERDIDO;
-  
+
   // Aqui fica guardada a imagem real que você puxar do seu computador
   XFile? _imagemSelecionada;
 
@@ -49,7 +49,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
 
     if (imagem != null) {
       setState(() {
-        _imagemSelecionada = imagem; 
+        _imagemSelecionada = imagem;
       });
     }
   }
@@ -59,7 +59,9 @@ class _TelaCadastroState extends State<TelaCadastro> {
     if (_imagemSelecionada == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Por favor, adicione uma foto do pet do seu computador.'),
+          content: Text(
+            'Por favor, adicione uma foto do pet do seu computador.',
+          ),
           backgroundColor: Cores.vermehoPerdido,
           behavior: SnackBarBehavior.floating,
         ),
@@ -68,20 +70,23 @@ class _TelaCadastroState extends State<TelaCadastro> {
     }
 
     if (_formKey.currentState!.validate()) {
-      
       // 1. CRIA O NOVO PET COM OS DADOS DO FORMULÁRIO
       final novoPet = Pet(
-        id: DateTime.now().toString(), // Gera um ID único na gambiarra
-        nome: _nomeController.text.isEmpty ? 'Pet sem nome' : _nomeController.text,
+        id: DateTime.now().toString(),
+        // Gera um ID único na gambiarra
+        nome: _nomeController.text.isEmpty
+            ? 'Pet sem nome'
+            : _nomeController.text,
         descricao: _descricaoController.text,
         localizacao: _localizacaoController.text,
-        imagemUrl: _imagemSelecionada!.path, // Salva o caminho temporário do PC/Web
+        imagemUrl: _imagemSelecionada!.path,
+        // Salva o caminho temporário do PC/Web
         status: _statusSelecionado,
       );
 
       // 2. ADICIONA NA SUA LISTA SIMULADA (banco de dados temporário)
       // Importe o dados_simulados.dart lá no topo do arquivo se der erro!
-      petsMock.add(novoPet); 
+      petsMock.add(novoPet);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -108,7 +113,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
     }
   }
 
-  // Essa é a mágica que resolve o problema. 
+  // Essa é a mágica que resolve o problema.
   // Sem placeholder estático. Só exibe se você realmente escolher algo.
   DecorationImage? _obterImagemDeFundo() {
     if (_imagemSelecionada != null) {
@@ -127,7 +132,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
       }
     }
     // Se ainda não escolheu nenhuma foto do PC, retorna nulo para não crashar
-    return null; 
+    return null;
   }
 
   @override
@@ -171,13 +176,20 @@ class _TelaCadastroState extends State<TelaCadastro> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.grey.shade300, width: 2),
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                          width: 2,
+                        ),
                         // Chama a função que exibe a SUA foto (se existir)
-                        image: _obterImagemDeFundo(), 
+                        image: _obterImagemDeFundo(),
                       ),
                       // Mostra o ícone de pata SÓ se você ainda não escolheu uma foto
                       child: _imagemSelecionada == null
-                          ? const Icon(Icons.pets, size: 80, color: Cores.iconesOpacos)
+                          ? const Icon(
+                              Icons.pets,
+                              size: 80,
+                              color: Cores.iconesOpacos,
+                            )
                           : null,
                     ),
                     Positioned(
@@ -191,7 +203,11 @@ class _TelaCadastroState extends State<TelaCadastro> {
                             color: Cores.botaoGeral,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.photo_library, color: Colors.white, size: 28),
+                          child: const Icon(
+                            Icons.photo_library,
+                            color: Colors.white,
+                            size: 28,
+                          ),
                         ),
                       ),
                     ),
@@ -207,7 +223,9 @@ class _TelaCadastroState extends State<TelaCadastro> {
                       texto: 'Perdido',
                       corAtiva: Cores.vermehoPerdido,
                       isSelected: _statusSelecionado == StatusPet.PERDIDO,
-                      onTap: () => setState(() => _statusSelecionado = StatusPet.PERDIDO),
+                      onTap: () => setState(
+                        () => _statusSelecionado = StatusPet.PERDIDO,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -216,7 +234,9 @@ class _TelaCadastroState extends State<TelaCadastro> {
                       texto: 'Encontrado',
                       corAtiva: Cores.verdeEncontrado,
                       isSelected: _statusSelecionado == StatusPet.ENCONTRADO,
-                      onTap: () => setState(() => _statusSelecionado = StatusPet.ENCONTRADO),
+                      onTap: () => setState(
+                        () => _statusSelecionado = StatusPet.ENCONTRADO,
+                      ),
                     ),
                   ),
                 ],
@@ -237,7 +257,8 @@ class _TelaCadastroState extends State<TelaCadastro> {
                     child: CampoFormulario(
                       hint: 'Raça do pet',
                       controller: _racaController,
-                      validator: (value) => value!.isEmpty ? 'Informe a raça' : null,
+                      validator: (value) =>
+                          value!.isEmpty ? 'Informe a raça' : null,
                     ),
                   ),
                 ],
@@ -248,14 +269,16 @@ class _TelaCadastroState extends State<TelaCadastro> {
                 hint: 'Digite um número de telefone para contato',
                 controller: _telefoneController,
                 keyboardType: TextInputType.phone,
-                validator: (value) => value!.isEmpty ? 'Informe um telefone' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Informe um telefone' : null,
               ),
               const SizedBox(height: 16),
 
               CampoFormulario(
                 hint: 'Localização (Ex: Taquaralto, Palmas - TO)',
                 controller: _localizacaoController,
-                validator: (value) => value!.isEmpty ? 'Informe onde foi visto/perdido' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Informe onde foi visto/perdido' : null,
               ),
               const SizedBox(height: 16),
 
@@ -263,7 +286,8 @@ class _TelaCadastroState extends State<TelaCadastro> {
                 hint: 'Digite uma descrição para melhor reconhecimento',
                 controller: _descricaoController,
                 maxLines: 5,
-                validator: (value) => value!.isEmpty ? 'Adicione uma descrição' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Adicione uma descrição' : null,
               ),
               const SizedBox(height: 40),
 

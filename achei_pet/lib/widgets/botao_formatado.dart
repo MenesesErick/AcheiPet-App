@@ -38,7 +38,11 @@ class BotaoFormatado extends StatelessWidget {
         ),
         child: Text(
           texto,
-          style: TextStyle(fontSize: tamanhoFonte, fontWeight: fontWeight, color: Cores.branco),
+          style: TextStyle(
+            fontSize: tamanhoFonte,
+            fontWeight: fontWeight,
+            color: Cores.branco,
+          ),
         ),
       ),
     );

@@ -36,7 +36,7 @@ class CardPet extends StatelessWidget {
           child: const Icon(Icons.pets, size: 40, color: Colors.grey),
         ),
       );
-    } 
+    }
     // Se for um pet cadastrado localmente rodando na Web (Edge/Chrome)
     else if (kIsWeb) {
       return Image.network(
@@ -51,7 +51,7 @@ class CardPet extends StatelessWidget {
           child: const Icon(Icons.pets, size: 40, color: Colors.grey),
         ),
       );
-    } 
+    }
     // Se for um pet cadastrado localmente rodando no Windows/Android/iOS
     else {
       return Image.file(

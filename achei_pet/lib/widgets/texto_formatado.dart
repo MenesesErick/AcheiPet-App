@@ -7,14 +7,14 @@ class TextoFormatado extends StatelessWidget {
   final FontWeight fontWeight;
   final Color color;
   final TextAlign textAlign;
-  
+
   const TextoFormatado({
     super.key,
     required this.texto,
     this.fontSize = 36,
     this.fontWeight = FontWeight.bold,
     this.color = Cores.fonteTitulo,
-    this.textAlign = TextAlign.center
+    this.textAlign = TextAlign.center,
   });
 
   @override
@@ -26,7 +26,7 @@ class TextoFormatado extends StatelessWidget {
         fontSize: fontSize,
         fontWeight: fontWeight,
         color: color,
-        letterSpacing: 0.3
+        letterSpacing: 0.3,
       ),
     );
   }

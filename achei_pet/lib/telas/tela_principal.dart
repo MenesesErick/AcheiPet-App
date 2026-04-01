@@ -20,8 +20,8 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
   final List<Widget> _telas = [
     const HomePage(),
     const TelaCadastro(),
-    const Center(child: Text('Tela Meus Anúncios em construção...')), 
-    const Center(child: Text('Tela de Perfil em construção...')), 
+    const Center(child: Text('Tela Meus Anúncios em construção...')),
+    const Center(child: Text('Tela de Perfil em construção...')),
   ];
 
   @override
@@ -29,7 +29,7 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
     return Scaffold(
       // O body muda de acordo com o índice selecionado no navbar
       body: _telas[_indiceAtual],
-      
+
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           boxShadow: [
@@ -47,13 +47,20 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
               _indiceAtual = indice;
             });
           },
-          type: BottomNavigationBarType.fixed, // fixed garante que todos os ícones apareçam
+          type: BottomNavigationBarType.fixed,
+          // fixed garante que todos os ícones apareçam
           backgroundColor: Cores.branco,
           selectedItemColor: Cores.navbarSelected,
           unselectedItemColor: Cores.navbarNotSelected,
           showUnselectedLabels: true,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+          selectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 12,
+          ),
           items: const [
             BottomNavigationBarItem(
               icon: Padding(

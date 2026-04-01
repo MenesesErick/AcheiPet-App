@@ -46,7 +46,7 @@ class CampoBusca extends StatelessWidget {
             fontWeight: FontWeight.w700,
             color: Cores.iconesOpacos,
           ),
-          contentPadding: const EdgeInsets.symmetric(vertical: 22)
+          contentPadding: const EdgeInsets.symmetric(vertical: 22),
         ),
       ),
     );

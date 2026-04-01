@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:achei_pet/dados/dados_simulados.dart';
+import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/widgets/campo_busca.dart';
 import 'package:achei_pet/widgets/card_pet.dart';
@@ -18,6 +19,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   FiltroPet _filtroAtual = FiltroPet.TODOS;
 
+  List<Pet> get _petsFiltrados {
+    return switch (_filtroAtual) {
+      FiltroPet.TODOS => petsMock,
+      FiltroPet.ENCONTRADOS => petsMock.where((p) => p.status == StatusPet.ENCONTRADO).toList(),
+      FiltroPet.PERDIDOS => petsMock.where((p) => p.status == StatusPet.PERDIDO).toList(),
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,11 +40,7 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.only(top: 10, right: 16),
             child: IconButton(
               onPressed: () {},
-              icon: const Icon(
-                Icons.account_circle_outlined,
-                size: 50,
-                color: Colors.black,
-              ),
+              icon: const Icon(Icons.account_circle_outlined, size: 50, color: Colors.black),
             ),
           ),
         ],
@@ -68,9 +73,9 @@ class _HomePageState extends State<HomePage> {
 
             Expanded(
               child: ListView.builder(
-                itemCount: petsMock.length,
+                itemCount: _petsFiltrados.length,
                 itemBuilder: (context, index) => CardPet(
-                  pet: petsMock[index],
+                  pet: _petsFiltrados[index],
                   onVerDetalhes: () {
                     // navegar para tela de detalhes
                   },
