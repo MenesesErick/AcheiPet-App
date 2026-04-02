@@ -5,7 +5,6 @@ import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/widgets/botao_formatado.dart';
 import 'package:achei_pet/widgets/texto_formatado.dart';
 import 'package:achei_pet/widgets/campo_formulario.dart';
-import 'package:achei_pet/widgets/botao_status.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:achei_pet/dados/dados_simulados.dart';
@@ -217,38 +216,11 @@ class _TelaCadastroState extends State<TelaCadastro> {
               const SizedBox(height: 32),
 
               Row(
-                children: [
-                  Expanded(
-                    child: BotaoStatus(
-                      texto: 'Perdido',
-                      corAtiva: Cores.vermehoPerdido,
-                      isSelected: _statusSelecionado == StatusPet.PERDIDO,
-                      onTap: () => setState(
-                        () => _statusSelecionado = StatusPet.PERDIDO,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: BotaoStatus(
-                      texto: 'Encontrado',
-                      corAtiva: Cores.verdeEncontrado,
-                      isSelected: _statusSelecionado == StatusPet.ENCONTRADO,
-                      onTap: () => setState(
-                        () => _statusSelecionado = StatusPet.ENCONTRADO,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: CampoFormulario(
-                      hint: 'Nome do pet (Opcional)',
+                      hint: 'Nome do pet',
                       controller: _nomeController,
                     ),
                   ),
