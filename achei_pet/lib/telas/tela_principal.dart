@@ -1,3 +1,4 @@
+import 'package:achei_pet/telas/tela_meus_anuncios.dart';
 import 'package:flutter/material.dart';
 import 'package:achei_pet/utils/cores.dart';
 
@@ -20,7 +21,7 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
   final List<Widget> _telas = [
     const HomePage(),
     const TelaCadastro(),
-    const Center(child: Text('Tela Meus Anúncios em construção...')),
+    const TelaMeusAnuncios(),
     const Center(child: Text('Tela de Perfil em construção...')),
   ];
 
