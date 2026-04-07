@@ -34,7 +34,7 @@ class CampoFormulario extends StatelessWidget {
         hintStyle: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,
-          color: Cores.iconesOpacos,
+          color: Color.fromARGB(132, 0, 0, 0),
         ),
         filled: true,
         fillColor: Colors.white,

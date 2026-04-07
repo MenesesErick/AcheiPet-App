@@ -6,6 +6,7 @@ import 'package:achei_pet/utils/constantes.dart';
 import 'package:achei_pet/widgets/botao_formatado.dart';
 import 'package:achei_pet/widgets/texto_formatado.dart';
 import 'package:achei_pet/widgets/campo_formulario.dart';
+import 'package:achei_pet/widgets/botao_status.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:achei_pet/dados/dados_simulados.dart';
@@ -190,10 +191,10 @@ class _TelaCadastroState extends State<TelaCadastro> {
                       // Mostra o ícone de pata SÓ se você ainda não escolheu uma foto
                       child: _imagemSelecionada == null
                           ? const Icon(
-                        Icons.pets,
-                        size: 80,
-                        color: Cores.iconesOpacos,
-                      )
+                              Icons.pets,
+                              size: 80,
+                              color: Cores.iconesOpacos,
+                            )
                           : null,
                     ),
                     Positioned(
@@ -226,7 +227,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
                 children: [
                   Expanded(
                     child: CampoFormulario(
-                      hint: 'Nome do pet (Opcional)',
+                      hint: 'Nome do pet',
                       controller: _nomeController,
                     ),
                   ),
@@ -236,7 +237,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
                       hint: 'Raça do pet',
                       controller: _racaController,
                       validator: (value) =>
-                      value!.isEmpty ? 'Informe a raça' : null,
+                          value!.isEmpty ? 'Informe a raça' : null,
                     ),
                   ),
                 ],
@@ -274,7 +275,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
                 hint: 'Localização (Ex: Taquaralto, Palmas - TO)',
                 controller: _localizacaoController,
                 validator: (value) =>
-                value!.isEmpty ? 'Informe onde foi visto/perdido' : null,
+                    value!.isEmpty ? 'Informe onde foi visto/perdido' : null,
               ),
               const SizedBox(height: 16),
 
@@ -283,7 +284,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
                 controller: _descricaoController,
                 maxLines: 5,
                 validator: (value) =>
-                value!.isEmpty ? 'Adicione uma descrição' : null,
+                    value!.isEmpty ? 'Adicione uma descrição' : null,
               ),
               const SizedBox(height: 40),
 
