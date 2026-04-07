@@ -2,10 +2,10 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/utils/cores.dart';
+import 'package:achei_pet/utils/constantes.dart';
 import 'package:achei_pet/widgets/botao_formatado.dart';
 import 'package:achei_pet/widgets/texto_formatado.dart';
 import 'package:achei_pet/widgets/campo_formulario.dart';
-import 'package:achei_pet/widgets/botao_status.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:achei_pet/dados/dados_simulados.dart';
@@ -25,6 +25,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
   final _telefoneController = TextEditingController();
   final _localizacaoController = TextEditingController();
   final _descricaoController = TextEditingController();
+  final _nomeDonoController = TextEditingController();
 
   StatusPet _statusSelecionado = StatusPet.PERDIDO;
 
@@ -38,6 +39,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
     _telefoneController.dispose();
     _localizacaoController.dispose();
     _descricaoController.dispose();
+    _nomeDonoController.dispose();
     super.dispose();
   }
 
@@ -77,11 +79,13 @@ class _TelaCadastroState extends State<TelaCadastro> {
         nome: _nomeController.text.isEmpty
             ? 'Pet sem nome'
             : _nomeController.text,
+        raca: _racaController.text,
         descricao: _descricaoController.text,
         localizacao: _localizacaoController.text,
         imagemUrl: _imagemSelecionada!.path,
         // Salva o caminho temporário do PC/Web
         status: _statusSelecionado,
+        nomeDono: _nomeDonoController.text,
       );
 
       // 2. ADICIONA NA SUA LISTA SIMULADA (banco de dados temporário)
@@ -142,7 +146,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
       appBar: AppBar(
         toolbarHeight: 120,
         centerTitle: true,
-        title: const TextoFormatado(texto: 'AcheiPet'),
+        title: const TextoFormatado(texto: Constantes.nomeApp),
         actions: [
           Padding(
             padding: const EdgeInsets.only(top: 10, right: 16),
@@ -186,10 +190,10 @@ class _TelaCadastroState extends State<TelaCadastro> {
                       // Mostra o ícone de pata SÓ se você ainda não escolheu uma foto
                       child: _imagemSelecionada == null
                           ? const Icon(
-                              Icons.pets,
-                              size: 80,
-                              color: Cores.iconesOpacos,
-                            )
+                        Icons.pets,
+                        size: 80,
+                        color: Cores.iconesOpacos,
+                      )
                           : null,
                     ),
                     Positioned(
@@ -214,34 +218,8 @@ class _TelaCadastroState extends State<TelaCadastro> {
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
 
-              Row(
-                children: [
-                  Expanded(
-                    child: BotaoStatus(
-                      texto: 'Perdido',
-                      corAtiva: Cores.vermehoPerdido,
-                      isSelected: _statusSelecionado == StatusPet.PERDIDO,
-                      onTap: () => setState(
-                        () => _statusSelecionado = StatusPet.PERDIDO,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: BotaoStatus(
-                      texto: 'Encontrado',
-                      corAtiva: Cores.verdeEncontrado,
-                      isSelected: _statusSelecionado == StatusPet.ENCONTRADO,
-                      onTap: () => setState(
-                        () => _statusSelecionado = StatusPet.ENCONTRADO,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
 
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -258,27 +236,45 @@ class _TelaCadastroState extends State<TelaCadastro> {
                       hint: 'Raça do pet',
                       controller: _racaController,
                       validator: (value) =>
-                          value!.isEmpty ? 'Informe a raça' : null,
+                      value!.isEmpty ? 'Informe a raça' : null,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
 
-              CampoFormulario(
-                hint: 'Digite um número de telefone para contato',
-                controller: _telefoneController,
-                keyboardType: TextInputType.phone,
-                validator: (value) =>
-                    value!.isEmpty ? 'Informe um telefone' : null,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: CampoFormulario(
+                      hint: 'Digite um número de telefone para contato',
+                      controller: _telefoneController,
+                      keyboardType: TextInputType.phone,
+                      validator: (value) =>
+                      value!.isEmpty ? 'Informe um telefone' : null,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: CampoFormulario(
+                      hint: 'Digite o nome do dono',
+                      controller: _nomeDonoController,
+                      keyboardType: TextInputType.text,
+                      validator: (value) =>
+                      value!.isEmpty ? 'Informe o nome do dono' : null,
+                    ),
+                  ),
+                ],
               ),
+
               const SizedBox(height: 16),
 
               CampoFormulario(
                 hint: 'Localização (Ex: Taquaralto, Palmas - TO)',
                 controller: _localizacaoController,
                 validator: (value) =>
-                    value!.isEmpty ? 'Informe onde foi visto/perdido' : null,
+                value!.isEmpty ? 'Informe onde foi visto/perdido' : null,
               ),
               const SizedBox(height: 16),
 
@@ -287,7 +283,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
                 controller: _descricaoController,
                 maxLines: 5,
                 validator: (value) =>
-                    value!.isEmpty ? 'Adicione uma descrição' : null,
+                value!.isEmpty ? 'Adicione uma descrição' : null,
               ),
               const SizedBox(height: 40),
 

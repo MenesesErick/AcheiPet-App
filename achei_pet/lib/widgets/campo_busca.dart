@@ -42,7 +42,7 @@ class CampoBusca extends StatelessWidget {
           ),
           hintText: hintText,
           hintStyle: const TextStyle(
-            fontSize: 22,
+            fontSize: 21,
             fontWeight: FontWeight.w700,
             color: Cores.iconesOpacos,
           ),

@@ -8,6 +8,8 @@ final List<Pet> petsMock = [
     localizacao: 'Próx. à Praça dos Girassóis',
     imagemUrl: 'assets/imagens/mugiwara_no_dog.jpg',
     status: StatusPet.ENCONTRADO,
+    raca: "King of Pirates",
+    nomeDono: "Monkey D. Dragon",
   ),
   Pet(
     id: '2',
@@ -17,5 +19,7 @@ final List<Pet> petsMock = [
     imagemUrl:
         'assets/imagens/gatoro.jpg',
     status: StatusPet.PERDIDO,
+    raca: "musgo",
+    nomeDono: "Tony Tony Chopper",
   ),
 ];

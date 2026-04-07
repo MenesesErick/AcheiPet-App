@@ -1,8 +1,8 @@
-import 'dart:ui';
-
 import 'package:achei_pet/dados/dados_simulados.dart';
 import 'package:achei_pet/models/pet.dart';
+import 'package:achei_pet/telas/tela_detalhes_pet.dart';
 import 'package:achei_pet/utils/cores.dart';
+import 'package:achei_pet/utils/constantes.dart';
 import 'package:achei_pet/widgets/campo_busca.dart';
 import 'package:achei_pet/widgets/card_pet.dart';
 import 'package:achei_pet/widgets/filtro_pet.dart';
@@ -19,12 +19,42 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   FiltroPet _filtroAtual = FiltroPet.TODOS;
 
+  final TextEditingController _buscaController = TextEditingController();
+  String _textoBusca = '';
+
+  @override
+  void dispose() {
+    _buscaController.dispose();
+    super.dispose();
+  }
+
   List<Pet> get _petsFiltrados {
-    return switch (_filtroAtual) {
+    List<Pet> petsPorStatus = switch (_filtroAtual) {
       FiltroPet.TODOS => petsMock,
       FiltroPet.ENCONTRADOS => petsMock.where((p) => p.status == StatusPet.ENCONTRADO).toList(),
       FiltroPet.PERDIDOS => petsMock.where((p) => p.status == StatusPet.PERDIDO).toList(),
     };
+
+    if (_textoBusca.isEmpty) return petsPorStatus;
+
+    final buscaMinuscula = _textoBusca.toLowerCase();
+
+    return petsPorStatus.where((pet) {
+      // Busca por Nome
+      if (pet.nome.toLowerCase().contains(buscaMinuscula)) return true;
+
+      // Busca por Localização
+      if (pet.localizacao.toLowerCase().contains(buscaMinuscula)) return true;
+
+      // Busca por Raça
+      if (pet.raca != null && pet.raca.toLowerCase().contains(buscaMinuscula)) return true;
+
+      return false;
+    }).toList();
+  }
+
+  void _navegarParaDetalhes(Pet pet) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => TelaDetalhesPet(pet: pet)));
   }
 
   @override
@@ -34,7 +64,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         toolbarHeight: 120,
         centerTitle: true,
-        title: const TextoFormatado(texto: 'AcheiPet'),
+        title: const TextoFormatado(texto: Constantes.nomeApp),
         actions: [
           Padding(
             padding: const EdgeInsets.only(top: 10, right: 16),
@@ -52,8 +82,17 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            CampoBusca(),
+            CampoBusca(
+              controller: _buscaController,
+              onChanged: (valor) {
+                setState(() {
+                  _textoBusca = valor;
+                });
+              },
+            ),
+
             SizedBox(height: 17),
+
             FiltroPets(
               selecionado: _filtroAtual,
               onChanged: (filtro) => setState(() => _filtroAtual = filtro),
@@ -66,21 +105,42 @@ class _HomePageState extends State<HomePage> {
             ),
             SizedBox(height: 8),
             Text(
-              'Publique um anúncio de pet perdido ou encontrado',
+              'Publique um anúncio de pet perdido',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
             ),
 
             Expanded(
-              child: ListView.builder(
-                itemCount: _petsFiltrados.length,
-                itemBuilder: (context, index) => CardPet(
-                  pet: _petsFiltrados[index],
-                  onVerDetalhes: () {
-                    // navegar para tela de detalhes
-                  },
-                ),
-              ),
+              child: _petsFiltrados.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.pets_outlined, size: 80, color: Colors.grey.shade300),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Nenhum pet encontrado',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _textoBusca.isEmpty ? 'Não há pets cadastrados' : 'Tente outra busca',
+                            style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: _petsFiltrados.length,
+                      itemBuilder: (context, index) => CardPet(
+                        pet: _petsFiltrados[index],
+                        onVerDetalhes: () => _navegarParaDetalhes(_petsFiltrados[index]),
+                      ),
+                    ),
             ),
           ],
         ),
