@@ -46,8 +46,8 @@ class _HomePageState extends State<HomePage> {
       // Busca por Localização
       if (pet.localizacao.toLowerCase().contains(buscaMinuscula)) return true;
 
-      // Busca por Raça
-      if (pet.raca != null && pet.raca.toLowerCase().contains(buscaMinuscula)) return true;
+      // Busca por Raça (Ajustado para lidar com o null)
+      if (pet.raca != null && pet.raca!.toLowerCase().contains(buscaMinuscula)) return true;
 
       return false;
     }).toList();
@@ -76,7 +76,6 @@ class _HomePageState extends State<HomePage> {
         ],
         backgroundColor: Colors.white,
       ),
-
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -90,26 +89,23 @@ class _HomePageState extends State<HomePage> {
                 });
               },
             ),
-
-            SizedBox(height: 17),
-
+            const SizedBox(height: 17),
             FiltroPets(
               selecionado: _filtroAtual,
               onChanged: (filtro) => setState(() => _filtroAtual = filtro),
             ),
-            SizedBox(height: 29),
-            Text(
+            const SizedBox(height: 29),
+            const Text(
               'Ajude um pet a voltar para casa',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 8),
-            Text(
+            const SizedBox(height: 8),
+            const Text(
               'Publique um anúncio de pet perdido',
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
             ),
-
             Expanded(
               child: _petsFiltrados.isEmpty
                   ? Center(
