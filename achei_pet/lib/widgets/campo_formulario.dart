@@ -7,6 +7,7 @@ class CampoFormulario extends StatelessWidget {
   final int maxLines;
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
+  final bool obscureText; // <--- NOVA PROPRIEDADE AQUI
 
   const CampoFormulario({
     super.key,
@@ -15,15 +16,17 @@ class CampoFormulario extends StatelessWidget {
     this.maxLines = 1,
     this.keyboardType = TextInputType.text,
     this.validator,
+    this.obscureText = false, // <--- PADRÃO É FALSE (não esconde o texto)
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      maxLines: maxLines,
+      maxLines: obscureText ? 1 : maxLines, // Se for senha, tem que ser 1 linha só
       keyboardType: keyboardType,
       validator: validator,
+      obscureText: obscureText, // <--- APLICA A PROPRIEDADE AQUI
       style: const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,
@@ -34,7 +37,7 @@ class CampoFormulario extends StatelessWidget {
         hintStyle: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,
-          color: Color.fromARGB(132, 0, 0, 0),
+          color: Cores.iconesOpacos,
         ),
         filled: true,
         fillColor: Colors.white,
