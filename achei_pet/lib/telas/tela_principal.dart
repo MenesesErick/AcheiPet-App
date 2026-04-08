@@ -1,4 +1,5 @@
 import 'package:achei_pet/telas/tela_meus_anuncios.dart';
+import 'package:achei_pet/telas/tela_perfil.dart';
 import 'package:flutter/material.dart';
 import 'package:achei_pet/utils/cores.dart';
 
@@ -22,7 +23,7 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
     const HomePage(),
     const TelaCadastro(),
     const TelaMeusAnuncios(),
-    const Center(child: Text('Tela de Perfil em construção...')),
+    const TelaPerfil(),
   ];
 
   @override
