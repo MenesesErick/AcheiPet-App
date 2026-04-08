@@ -9,7 +9,6 @@ class TelaDetalhesPet extends StatelessWidget {
 
   const TelaDetalhesPet({super.key, required this.pet});
 
-  // Mesmo método de carregamento de imagem do CardPet
   Widget _carregarImagem(String url) {
     if (url.isEmpty) {
       return Container(
@@ -85,7 +84,6 @@ class TelaDetalhesPet extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Imagem do pet em destaque
             _carregarImagem(pet.imagemUrl),
 
             Padding(
@@ -93,7 +91,6 @@ class TelaDetalhesPet extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Nome e Status
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -131,7 +128,6 @@ class TelaDetalhesPet extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
-                  // Localização
                   _buildInfoSection(
                     icon: Icons.location_on_outlined,
                     titulo: 'Localização',
@@ -140,7 +136,6 @@ class TelaDetalhesPet extends StatelessWidget {
 
                   const SizedBox(height: 16),
 
-                  // Descrição
                   _buildInfoSection(
                     icon: Icons.description_outlined,
                     titulo: 'Descrição',
@@ -152,26 +147,32 @@ class TelaDetalhesPet extends StatelessWidget {
                   _buildInfoSection(
                     icon: Icons.pets_outlined,
                     titulo: 'Raça',
-                    conteudo: pet.raca,
+                    conteudo: pet.raca ?? 'Não informada', // Lidando com a possibilidade de null
                   ),
 
                   const SizedBox(height: 16),
 
                   _buildInfoSection(
                     icon: Icons.perm_identity,
-                    titulo: 'Nome do Dono',
+                    titulo: 'Nome do Dono / Responsável',
                     conteudo: pet.nomeDono,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  _buildInfoSection(
+                    icon: Icons.phone_android_outlined,
+                    titulo: 'Telefone para Contato',
+                    conteudo: pet.telefoneContato, // Exibindo o novo campo
                   ),
 
                   const SizedBox(height: 30),
 
-                  // Botões de ação
                   Row(
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            // TODO: Implementar compartilhamento
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Funcionalidade de compartilhamento em desenvolvimento'),
@@ -191,7 +192,6 @@ class TelaDetalhesPet extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            // TODO: Implementar contato com o anunciante
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Funcionalidade de contato em desenvolvimento'),
@@ -220,7 +220,6 @@ class TelaDetalhesPet extends StatelessWidget {
     );
   }
 
-  // Widget auxiliar para exibir seções de informação
   Widget _buildInfoSection({
     required IconData icon,
     required String titulo,

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:achei_pet/telas/tela_principal.dart'; // Importe a nova tela
+import 'package:achei_pet/telas/tela_inicial.dart'; // Importe a nova tela
 
 void main() {
   runApp(const MainApp());
@@ -12,7 +12,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: TelaPrincipal(), // Substitua HomePage() por TelaPrincipal()
+      home: TelaInicial(), // Substitua HomePage() por TelaPrincipal()
     );
   }
 }

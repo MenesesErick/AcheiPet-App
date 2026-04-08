@@ -2,8 +2,6 @@ import 'dart:io';
 
 import 'package:achei_pet/dados/dados_simulados.dart';
 import 'package:achei_pet/models/pet.dart';
-import 'package:achei_pet/telas/home_page.dart';
-import 'package:achei_pet/telas/tela_principal.dart';
 import 'package:achei_pet/utils/constantes.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/widgets/botao_formatado.dart';
@@ -31,8 +29,6 @@ class _TelaCadastroState extends State<TelaCadastro> {
   final _nomeDonoController = TextEditingController();
 
   StatusPet _statusSelecionado = StatusPet.PERDIDO;
-
-  // Aqui fica guardada a imagem real que você puxar do seu computador
   XFile? _imagemSelecionada;
 
   @override
@@ -46,10 +42,8 @@ class _TelaCadastroState extends State<TelaCadastro> {
     super.dispose();
   }
 
-  // Lógica real de pegar arquivo do computador/celular
   Future<void> _escolherImagem() async {
     final ImagePicker picker = ImagePicker();
-    // Abre a janela do Windows/Edge para você escolher o arquivo
     final XFile? imagem = await picker.pickImage(source: ImageSource.gallery);
 
     if (imagem != null) {
@@ -60,7 +54,6 @@ class _TelaCadastroState extends State<TelaCadastro> {
   }
 
   void _salvarCadastro() {
-    // Trava para obrigar a escolha da foto
     if (_imagemSelecionada == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -73,25 +66,20 @@ class _TelaCadastroState extends State<TelaCadastro> {
     }
 
     if (_formKey.currentState!.validate()) {
-      // 1. CRIA O NOVO PET COM OS DADOS DO FORMULÁRIO
       final novoPet = Pet(
         id: DateTime.now().toString(),
-        // Gera um ID único na gambiarra
+        usuarioId: usuarioLogadoId, // ID fixo de quem está usando o app agora
         nome: _nomeController.text.isEmpty ? 'Pet sem nome' : _nomeController.text,
-        raca: _racaController.text,
+        raca: _racaController.text.isEmpty ? null : _racaController.text, // Tratando como opcional
         descricao: _descricaoController.text,
         localizacao: _localizacaoController.text,
         imagemUrl: _imagemSelecionada!.path,
-        // Salva o caminho temporário do PC/Web
         status: _statusSelecionado,
         nomeDono: _nomeDonoController.text,
+        telefoneContato: _telefoneController.text, // Mapeado para o novo modelo
       );
 
-      // 2. ADICIONA NA SUA LISTA SIMULADA (banco de dados temporário)
-      // Importe o dados_simulados.dart lá no topo do arquivo se der erro!
       petsMock.add(novoPet);
-
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => TelaPrincipal()));
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -104,7 +92,6 @@ class _TelaCadastroState extends State<TelaCadastro> {
         ),
       );
 
-      // Limpa a tela para um novo cadastro
       _formKey.currentState!.reset();
       setState(() {
         _statusSelecionado = StatusPet.PERDIDO;
@@ -114,23 +101,19 @@ class _TelaCadastroState extends State<TelaCadastro> {
         _telefoneController.clear();
         _localizacaoController.clear();
         _descricaoController.clear();
+        _nomeDonoController.clear();
       });
     }
   }
 
-  // Essa é a mágica que resolve o problema.
-  // Sem placeholder estático. Só exibe se você realmente escolher algo.
   DecorationImage? _obterImagemDeFundo() {
     if (_imagemSelecionada != null) {
       if (kIsWeb) {
-        // No Edge/Web, o Flutter usa o caminho do arquivo gerado pelo navegador
         return DecorationImage(image: NetworkImage(_imagemSelecionada!.path), fit: BoxFit.cover);
       } else {
-        // No Celular, ele lê o arquivo físico mesmo
         return DecorationImage(image: FileImage(File(_imagemSelecionada!.path)), fit: BoxFit.cover);
       }
     }
-    // Se ainda não escolheu nenhuma foto do PC, retorna nulo para não crashar
     return null;
   }
 
@@ -161,7 +144,6 @@ class _TelaCadastroState extends State<TelaCadastro> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Área da Foto de Perfil
               Center(
                 child: Stack(
                   children: [
@@ -172,10 +154,8 @@ class _TelaCadastroState extends State<TelaCadastro> {
                         color: Colors.white,
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.grey.shade300, width: 2),
-                        // Chama a função que exibe a SUA foto (se existir)
                         image: _obterImagemDeFundo(),
                       ),
-                      // Mostra o ícone de pata SÓ se você ainda não escolheu uma foto
                       child: _imagemSelecionada == null
                           ? const Icon(Icons.pets, size: 80, color: Cores.iconesOpacos)
                           : null,
@@ -184,7 +164,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
                       bottom: 5,
                       right: 15,
                       child: GestureDetector(
-                        onTap: _escolherImagem, // Abre suas pastas do PC
+                        onTap: _escolherImagem,
                         child: Container(
                           padding: const EdgeInsets.all(12),
                           decoration: const BoxDecoration(
@@ -210,9 +190,9 @@ class _TelaCadastroState extends State<TelaCadastro> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: CampoFormulario(
-                      hint: 'Raça do pet',
+                      hint: 'Raça do pet (Opcional)',
                       controller: _racaController,
-                      validator: (value) => value!.isEmpty ? 'Informe a raça' : null,
+                      // Removido o validador para tornar opcional
                     ),
                   ),
                 ],
@@ -224,7 +204,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
                 children: [
                   Expanded(
                     child: CampoFormulario(
-                      hint: 'Digite um número de telefone para contato',
+                      hint: 'Telefone para contato',
                       controller: _telefoneController,
                       keyboardType: TextInputType.phone,
                       validator: (value) => value!.isEmpty ? 'Informe um telefone' : null,
@@ -236,7 +216,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
                       hint: 'Digite o nome do dono',
                       controller: _nomeDonoController,
                       keyboardType: TextInputType.text,
-                      validator: (value) => value!.isEmpty ? 'Informe o nome do dono' : null,
+                      validator: (value) => value!.isEmpty ? 'Informe o dono' : null,
                     ),
                   ),
                 ],
