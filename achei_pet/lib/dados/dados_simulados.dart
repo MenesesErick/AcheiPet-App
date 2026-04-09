@@ -17,8 +17,8 @@ final List<Usuario> usuariosMock = [
   ),
   Usuario(
     id: 'user_demo_2',
-    nome: 'Pedro Vieira',
-    email: 'Hugo@unitins.br',
+    nome: 'Hugo Valuar',
+    email: 'hugo@unitins.br',
     telefonePessoal: '(63) 99999-5555',
     fotoUrl: null, // Testando um usuário sem foto
   ),
@@ -40,7 +40,7 @@ final List<Pet> petsMock = [
   ),
   Pet(
     id: '2',
-    usuarioId: 'user_demo_2', // Pedro postou esse anúncio
+    usuarioId: 'user_demo_2', // Hugo postou esse anúncio
     nome: 'Gatoro',
     descricao: 'Tem pelo verde e carrega 3 palitos de dente',
     localizacao: 'Taquaralto, Palmas - TO',

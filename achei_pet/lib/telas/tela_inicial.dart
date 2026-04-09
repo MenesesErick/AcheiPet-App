@@ -1,6 +1,7 @@
 import 'package:achei_pet/telas/tela_cadastro_usuario.dart';
 import 'package:achei_pet/telas/tela_principal.dart';
 import 'package:achei_pet/utils/cores.dart';
+import 'package:achei_pet/utils/constantes.dart';
 import 'package:achei_pet/widgets/botao_formatado.dart';
 import 'package:achei_pet/widgets/campo_formulario.dart';
 import 'package:achei_pet/widgets/texto_formatado.dart';
@@ -42,7 +43,7 @@ class _TelaInicialState extends State<TelaInicial> {
                 const Icon(Icons.pets, size: 100, color: Cores.botaoGeral),
                 const SizedBox(height: 16),
                 const TextoFormatado(
-                  texto: 'AcheiPet',
+                  texto: Constantes.nomeApp,
                   fontSize: 42,
                   textAlign: TextAlign.center,
                 ),
