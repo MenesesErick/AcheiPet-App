@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:achei_pet/dados/dados_simulados.dart';
+import 'package:achei_pet/servicos/usuario_service.dart';
 import 'package:achei_pet/models/usuario.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -81,16 +81,15 @@ class _TelaCadastroUsuarioState extends State<TelaCadastroUsuario> {
       final novoUsuario = Usuario(
         id: novoId,
         nome: _nomeController.text,
-        email: _emailController.text,
+        email: _emailController.text.trim().toLowerCase(),
         telefonePessoal: _telefoneController.text,
-        fotoUrl: _imagemSelecionada?.path, // Se escolheu foto, salva o path
+        fotoUrl: _imagemSelecionada?.path,
+        senha: _senhaController.text,
       );
 
-      // Adiciona na lista
-      usuariosMock.add(novoUsuario);
-      
-      // "Loga" o usuário (Avisa o sistema que é ele que está usando agora)
-      usuarioLogadoId = novoId;
+      UsuarioService.salvar(novoUsuario);
+      UsuarioService.usuarioLogadoId = novoId;
+      UsuarioService.debugListarTodos();
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

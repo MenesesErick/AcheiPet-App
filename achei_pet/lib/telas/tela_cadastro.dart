@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:achei_pet/dados/dados_simulados.dart';
+import 'package:achei_pet/servicos/pet_service.dart';
+import 'package:achei_pet/servicos/usuario_service.dart';
 import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/utils/constantes.dart';
 import 'package:achei_pet/utils/cores.dart';
@@ -68,7 +69,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
     if (_formKey.currentState!.validate()) {
       final novoPet = Pet(
         id: DateTime.now().toString(),
-        usuarioId: usuarioLogadoId, // ID fixo de quem está usando o app agora
+        usuarioId: UsuarioService.usuarioLogadoId,
         nome: _nomeController.text.isEmpty ? 'Pet sem nome' : _nomeController.text,
         raca: _racaController.text.isEmpty ? null : _racaController.text, // Tratando como opcional
         descricao: _descricaoController.text,
@@ -79,7 +80,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
         telefoneContato: _telefoneController.text, // Mapeado para o novo modelo
       );
 
-      petsMock.add(novoPet);
+      PetService.salvar(novoPet);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

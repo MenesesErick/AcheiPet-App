@@ -1,24 +1,31 @@
+import 'package:isar/isar.dart';
+
+part 'pet.g.dart';
+
 enum StatusPet { PERDIDO, ENCONTRADO }
 
+@collection
 class Pet {
-  final String id;
-  final String usuarioId; // FK (Foreign Key) - Quem postou o anúncio
-  final String nome;
-  final String? raca; 
-  final String descricao;
-  final String localizacao;
-  final String imagemUrl;
-  final StatusPet status;
-  
-  // Contato de quem perdeu (Pode ser o próprio usuário ou um amigo)
-  final String nomeDono;
-  final String telefoneContato; 
+  Id isarId = Isar.autoIncrement;
 
-  const Pet({
+  @Index(unique: true)
+  String id;
+  String usuarioId;
+  String nome;
+  String? raca;
+  String descricao;
+  String localizacao;
+  String imagemUrl;
+  @Enumerated(EnumType.name)
+  StatusPet status;
+  String nomeDono;
+  String telefoneContato;
+
+  Pet({
     required this.id,
-    required this.usuarioId, // Agora o Pet sabe a qual conta ele pertence
+    required this.usuarioId,
     required this.nome,
-    this.raca, // Raça pode ser nula se a pessoa não souber
+    this.raca,
     required this.descricao,
     required this.localizacao,
     required this.imagemUrl,

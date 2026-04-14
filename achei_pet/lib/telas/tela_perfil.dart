@@ -2,8 +2,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'package:achei_pet/dados/dados_simulados.dart'; // Para acessar usuarioLogadoId e usuariosMock
 import 'package:achei_pet/models/usuario.dart';
+import 'package:achei_pet/servicos/usuario_service.dart';
 import 'package:achei_pet/telas/tela_inicial.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/widgets/texto_formatado.dart';
@@ -35,16 +35,13 @@ class TelaPerfil extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Encontra quem é o usuário logado usando a variável global
-    final Usuario usuarioAtual = usuariosMock.firstWhere(
-      (u) => u.id == usuarioLogadoId,
-      orElse: () => const Usuario(
-        id: '0', 
-        nome: 'Usuário Desconhecido', 
-        email: 'erro@app.com', 
-        telefonePessoal: ''
-      ),
-    );
+    final Usuario usuarioAtual = UsuarioService.buscarPorId(UsuarioService.usuarioLogadoId) ??
+        Usuario(
+          id: '0',
+          nome: 'Usuário Desconhecido',
+          email: 'erro@app.com',
+          telefonePessoal: '',
+        );
 
     return Scaffold(
       backgroundColor: Cores.corFundo,

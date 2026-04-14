@@ -1,5 +1,5 @@
-import 'package:achei_pet/dados/dados_simulados.dart';
 import 'package:achei_pet/models/pet.dart';
+import 'package:achei_pet/servicos/pet_service.dart';
 import 'package:achei_pet/telas/tela_detalhes_pet.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/utils/constantes.dart';
@@ -29,10 +29,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   List<Pet> get _petsFiltrados {
+    final todos = PetService.getTodos();
     List<Pet> petsPorStatus = switch (_filtroAtual) {
-      FiltroPet.TODOS => petsMock,
-      FiltroPet.ENCONTRADOS => petsMock.where((p) => p.status == StatusPet.ENCONTRADO).toList(),
-      FiltroPet.PERDIDOS => petsMock.where((p) => p.status == StatusPet.PERDIDO).toList(),
+      FiltroPet.TODOS => todos,
+      FiltroPet.ENCONTRADOS => todos.where((p) => p.status == StatusPet.ENCONTRADO).toList(),
+      FiltroPet.PERDIDOS => todos.where((p) => p.status == StatusPet.PERDIDO).toList(),
     };
 
     if (_textoBusca.isEmpty) return petsPorStatus;

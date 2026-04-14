@@ -7,7 +7,8 @@ import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/utils/constantes.dart';
 import 'package:achei_pet/widgets/texto_formatado.dart';
-import 'package:achei_pet/dados/dados_simulados.dart';
+import 'package:achei_pet/servicos/pet_service.dart';
+import 'package:achei_pet/servicos/usuario_service.dart';
 
 class TelaMeusAnuncios extends StatefulWidget {
   const TelaMeusAnuncios({super.key});
@@ -46,7 +47,7 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
 
   void _carregarMeusAnuncios() {
     setState(() {
-      _meusAnuncios = petsMock.length >= 3 ? petsMock.sublist(0, 3) : petsMock;
+      _meusAnuncios = PetService.getPorUsuario(UsuarioService.usuarioLogadoId);
     });
   }
 
@@ -119,9 +120,9 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
           ),
           TextButton(
             onPressed: () {
+              PetService.deletar(pet.isarId);
               setState(() {
                 _meusAnuncios.remove(pet);
-                petsMock.remove(pet);
 
                 if (_meusAnuncios.isEmpty) {
                   _paginaAtual = 0;

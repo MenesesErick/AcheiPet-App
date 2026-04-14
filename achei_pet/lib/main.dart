@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:achei_pet/telas/tela_inicial.dart'; // Importe a nova tela
+import 'package:achei_pet/servicos/isar_service.dart';
+import 'package:achei_pet/telas/tela_inicial.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await IsarService.init();
   runApp(const MainApp());
 }
 
@@ -12,7 +15,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: TelaInicial(), // Substitua HomePage() por TelaPrincipal()
+      home: TelaInicial(),
     );
   }
 }

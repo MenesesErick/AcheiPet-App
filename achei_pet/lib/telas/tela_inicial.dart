@@ -1,3 +1,4 @@
+import 'package:achei_pet/servicos/usuario_service.dart';
 import 'package:achei_pet/telas/tela_cadastro_usuario.dart';
 import 'package:achei_pet/telas/tela_principal.dart';
 import 'package:achei_pet/utils/cores.dart';
@@ -19,12 +20,25 @@ class _TelaInicialState extends State<TelaInicial> {
   final _senhaController = TextEditingController();
 
   void _fazerLogin() {
-    // Aqui no futuro vai entrar o FirebaseAuth.instance.signInWithEmailAndPassword(...)
-    // Por enquanto, é gambiarra visual para avançar:
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const TelaPrincipal()),
-    );
+    final email = _emailController.text.trim();
+    final senha = _senhaController.text;
+
+    final sucesso = UsuarioService.login(email, senha);
+
+    if (sucesso) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const TelaPrincipal()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('E-mail ou senha inválidos.'),
+          backgroundColor: Cores.vermehoPerdido,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
