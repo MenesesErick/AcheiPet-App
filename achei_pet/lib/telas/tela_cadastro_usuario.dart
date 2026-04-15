@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:achei_pet/servicos/usuario_service.dart';
 import 'package:achei_pet/models/usuario.dart';
 import 'package:flutter/foundation.dart';
+import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -75,8 +76,7 @@ class _TelaCadastroUsuarioState extends State<TelaCadastroUsuario> {
         return;
       }
 
-      // --- CRIAÇÃO DO USUÁRIO NA GAMBIARRA ---
-      final novoId = DateTime.now().millisecondsSinceEpoch.toString();
+      final novoId = const Uuid().v4();
       
       final novoUsuario = Usuario(
         id: novoId,
