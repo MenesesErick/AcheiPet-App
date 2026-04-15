@@ -150,13 +150,54 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
     );
   }
 
-  void _editarAnuncio(Pet pet) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Funcionalidade de edição em desenvolvimento'),
-        behavior: SnackBarBehavior.floating,
+  void _alterarStatus(Pet pet) {
+    final novoStatus =
+        pet.status == StatusPet.PERDIDO ? StatusPet.ENCONTRADO : StatusPet.PERDIDO;
+    final novoStatusTexto = novoStatus == StatusPet.PERDIDO ? 'Perdido' : 'Encontrado';
+    final corStatus =
+        novoStatus == StatusPet.ENCONTRADO ? Cores.verdeEncontrado : Cores.vermehoPerdido;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Alterar Status'),
+        content: Text('Deseja marcar ${pet.nome} como $novoStatusTexto?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              PetService.atualizarStatus(pet, novoStatus);
+              setState(() {
+                pet.status = novoStatus;
+              });
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('${pet.nome} marcado como $novoStatusTexto!'),
+                  backgroundColor: corStatus,
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+            child: Text(
+              'Confirmar',
+              style: TextStyle(color: corStatus, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  Future<void> _editarAnuncio(Pet pet) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => TelaCadastro(petParaEditar: pet)),
+    );
+    _carregarMeusAnuncios();
   }
 
   void _compartilharAnuncio(Pet pet) {
@@ -516,6 +557,29 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
         ),
 
         const SizedBox(height: 20),
+
+        // Botão de alterar status
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () => _alterarStatus(petAtual),
+            icon: Icon(
+              isPerdido ? Icons.check_circle_outline : Icons.search,
+              size: 20,
+            ),
+            label: Text(
+              isPerdido ? 'Marcar como Encontrado' : 'Marcar como Perdido',
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isPerdido ? Cores.verdeEncontrado : Cores.vermehoPerdido,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 12),
 
         // Botões de ação
         Row(

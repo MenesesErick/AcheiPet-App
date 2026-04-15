@@ -25,4 +25,9 @@ class PetService {
       IsarService.db.pets.deleteSync(isarId);
     });
   }
+
+  static void atualizarStatus(Pet pet, StatusPet novoStatus) {
+    pet.status = novoStatus;
+    salvar(pet);
+  }
 }

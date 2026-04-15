@@ -4,13 +4,39 @@ import 'package:flutter/material.dart';
 
 import 'package:achei_pet/models/usuario.dart';
 import 'package:achei_pet/servicos/usuario_service.dart';
+import 'package:achei_pet/telas/tela_editar_perfil.dart';
 import 'package:achei_pet/telas/tela_inicial.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/widgets/texto_formatado.dart';
 import 'package:achei_pet/widgets/item_menu_perfil.dart';
 
-class TelaPerfil extends StatelessWidget {
+class TelaPerfil extends StatefulWidget {
   const TelaPerfil({super.key});
+
+  @override
+  State<TelaPerfil> createState() => _TelaPerfilState();
+}
+
+class _TelaPerfilState extends State<TelaPerfil> {
+  late Usuario _usuario;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarUsuario();
+  }
+
+  void _carregarUsuario() {
+    setState(() {
+      _usuario = UsuarioService.buscarPorId(UsuarioService.usuarioLogadoId) ??
+          Usuario(
+            id: '0',
+            nome: 'Usuário Desconhecido',
+            email: 'erro@app.com',
+            telefonePessoal: '',
+          );
+    });
+  }
 
   void _fazerLogout(BuildContext context) {
     Navigator.pushAndRemoveUntil(
@@ -20,7 +46,14 @@ class TelaPerfil extends StatelessWidget {
     );
   }
 
-  // Função inteligente para carregar a imagem do perfil (Igual do Pet)
+  Future<void> _editarPerfil() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => TelaEditarPerfil(usuario: _usuario)),
+    );
+    _carregarUsuario();
+  }
+
   DecorationImage? _obterImagemDeFundo(String? url) {
     if (url == null || url.isEmpty) return null;
 
@@ -35,14 +68,6 @@ class TelaPerfil extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Usuario usuarioAtual = UsuarioService.buscarPorId(UsuarioService.usuarioLogadoId) ??
-        Usuario(
-          id: '0',
-          nome: 'Usuário Desconhecido',
-          email: 'erro@app.com',
-          telefonePessoal: '',
-        );
-
     return Scaffold(
       backgroundColor: Cores.corFundo,
       appBar: AppBar(
@@ -63,38 +88,57 @@ class TelaPerfil extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 30),
-            
-            // Avatar do Usuário (Dinâmico)
+
+            // Avatar do Usuário
             Center(
-              child: Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white,
-                  border: Border.all(color: Cores.botaoGeral, width: 3),
-                  image: _obterImagemDeFundo(usuarioAtual.fotoUrl),
-                ),
-                child: usuarioAtual.fotoUrl == null
-                    ? const Icon(Icons.person, size: 60, color: Cores.iconesOpacos)
-                    : null,
+              child: Stack(
+                children: [
+                  Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      border: Border.all(color: Cores.botaoGeral, width: 3),
+                      image: _obterImagemDeFundo(_usuario.fotoUrl),
+                    ),
+                    child: _usuario.fotoUrl == null
+                        ? const Icon(Icons.person, size: 60, color: Cores.iconesOpacos)
+                        : null,
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: GestureDetector(
+                      onTap: _editarPerfil,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: const BoxDecoration(
+                          color: Cores.botaoGeral,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.edit, color: Colors.white, size: 18),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 16),
-            
-            // Dados do Usuário (Dinâmicos do BD Simulado)
+
+            // Dados do Usuário
             Text(
-              usuarioAtual.nome,
+              _usuario.nome,
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black87),
             ),
             const SizedBox(height: 4),
             Text(
-              usuarioAtual.email,
+              _usuario.email,
               style: const TextStyle(fontSize: 16, color: Cores.cinza),
             ),
             const SizedBox(height: 4),
             Text(
-              usuarioAtual.telefonePessoal,
+              _usuario.telefonePessoal,
               style: const TextStyle(fontSize: 14, color: Colors.black54),
             ),
             const SizedBox(height: 40),
@@ -103,7 +147,7 @@ class TelaPerfil extends StatelessWidget {
             ItemMenuPerfil(
               icone: Icons.edit_outlined,
               titulo: 'Editar Perfil',
-              onTap: () {},
+              onTap: _editarPerfil,
             ),
             ItemMenuPerfil(
               icone: Icons.notifications_outlined,
@@ -120,7 +164,7 @@ class TelaPerfil extends StatelessWidget {
               titulo: 'Ajuda e Suporte',
               onTap: () {},
             ),
-            
+
             const SizedBox(height: 20),
 
             Padding(

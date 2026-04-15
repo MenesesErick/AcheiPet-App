@@ -13,7 +13,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class TelaCadastro extends StatefulWidget {
-  const TelaCadastro({super.key});
+  final Pet? petParaEditar;
+
+  const TelaCadastro({super.key, this.petParaEditar});
 
   @override
   State<TelaCadastro> createState() => _TelaCadastroState();
@@ -31,6 +33,25 @@ class _TelaCadastroState extends State<TelaCadastro> {
 
   StatusPet _statusSelecionado = StatusPet.PERDIDO;
   XFile? _imagemSelecionada;
+  String? _imagemAtualUrl;
+
+  bool get _modoEdicao => widget.petParaEditar != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final pet = widget.petParaEditar;
+    if (pet != null) {
+      _nomeController.text = pet.nome;
+      _racaController.text = pet.raca ?? '';
+      _telefoneController.text = pet.telefoneContato;
+      _localizacaoController.text = pet.localizacao;
+      _descricaoController.text = pet.descricao;
+      _nomeDonoController.text = pet.nomeDono;
+      _statusSelecionado = pet.status;
+      _imagemAtualUrl = pet.imagemUrl;
+    }
+  }
 
   @override
   void dispose() {
@@ -55,7 +76,8 @@ class _TelaCadastroState extends State<TelaCadastro> {
   }
 
   void _salvarCadastro() {
-    if (_imagemSelecionada == null) {
+    final temImagem = _imagemSelecionada != null || (_modoEdicao && _imagemAtualUrl != null && _imagemAtualUrl!.isNotEmpty);
+    if (!temImagem) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Por favor, adicione uma foto do pet do seu computador.'),
@@ -67,31 +89,41 @@ class _TelaCadastroState extends State<TelaCadastro> {
     }
 
     if (_formKey.currentState!.validate()) {
-      final novoPet = Pet(
-        id: DateTime.now().toString(),
-        usuarioId: UsuarioService.usuarioLogadoId,
+      final pet = widget.petParaEditar;
+      final petAtualizado = Pet(
+        id: pet?.id ?? DateTime.now().toString(),
+        usuarioId: pet?.usuarioId ?? UsuarioService.usuarioLogadoId,
         nome: _nomeController.text.isEmpty ? 'Pet sem nome' : _nomeController.text,
-        raca: _racaController.text.isEmpty ? null : _racaController.text, // Tratando como opcional
+        raca: _racaController.text.isEmpty ? null : _racaController.text,
         descricao: _descricaoController.text,
         localizacao: _localizacaoController.text,
-        imagemUrl: _imagemSelecionada!.path,
+        imagemUrl: _imagemSelecionada?.path ?? _imagemAtualUrl!,
         status: _statusSelecionado,
         nomeDono: _nomeDonoController.text,
-        telefoneContato: _telefoneController.text, // Mapeado para o novo modelo
+        telefoneContato: _telefoneController.text,
       );
 
-      PetService.salvar(novoPet);
+      if (_modoEdicao) {
+        petAtualizado.isarId = pet!.isarId;
+      }
+
+      PetService.salvar(petAtualizado);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'Pet cadastrado com sucesso!',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            _modoEdicao ? 'Anúncio atualizado com sucesso!' : 'Pet cadastrado com sucesso!',
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           backgroundColor: Cores.verdeEncontrado,
           behavior: SnackBarBehavior.floating,
         ),
       );
+
+      if (_modoEdicao) {
+        Navigator.pop(context, petAtualizado);
+        return;
+      }
 
       _formKey.currentState!.reset();
       setState(() {
@@ -115,6 +147,15 @@ class _TelaCadastroState extends State<TelaCadastro> {
         return DecorationImage(image: FileImage(File(_imagemSelecionada!.path)), fit: BoxFit.cover);
       }
     }
+    if (_imagemAtualUrl != null && _imagemAtualUrl!.isNotEmpty) {
+      if (_imagemAtualUrl!.startsWith('assets/')) {
+        return DecorationImage(image: AssetImage(_imagemAtualUrl!), fit: BoxFit.cover);
+      } else if (kIsWeb) {
+        return DecorationImage(image: NetworkImage(_imagemAtualUrl!), fit: BoxFit.cover);
+      } else {
+        return DecorationImage(image: FileImage(File(_imagemAtualUrl!)), fit: BoxFit.cover);
+      }
+    }
     return null;
   }
 
@@ -125,7 +166,16 @@ class _TelaCadastroState extends State<TelaCadastro> {
       appBar: AppBar(
         toolbarHeight: 120,
         centerTitle: true,
-        title: const TextoFormatado(texto: Constantes.nomeApp),
+        title: Column(
+          children: [
+            const TextoFormatado(texto: Constantes.nomeApp),
+            const SizedBox(height: 4),
+            Text(
+              _modoEdicao ? 'Editar Anúncio' : 'Novo Anúncio',
+              style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.normal),
+            ),
+          ],
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(top: 10, right: 16),
@@ -242,7 +292,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
 
               Center(
                 child: BotaoFormatado(
-                  texto: 'Salvar Cadastro',
+                  texto: _modoEdicao ? 'Salvar Alterações' : 'Salvar Cadastro',
                   largura: 250,
                   altura: 55,
                   tamanhoFonte: 18,
