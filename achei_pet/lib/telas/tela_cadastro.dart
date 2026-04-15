@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:achei_pet/servicos/pet_service.dart';
+import 'package:uuid/uuid.dart';
 import 'package:achei_pet/servicos/usuario_service.dart';
 import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/telas/tela_perfil.dart';
@@ -92,7 +93,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
     if (_formKey.currentState!.validate()) {
       final pet = widget.petParaEditar;
       final petAtualizado = Pet(
-        id: pet?.id ?? DateTime.now().toString(),
+        id: Uuid().v4(),
         usuarioId: pet?.usuarioId ?? UsuarioService.usuarioLogadoId,
         nome: _nomeController.text.isEmpty ? 'Pet sem nome' : _nomeController.text,
         raca: _racaController.text.isEmpty ? null : _racaController.text,
