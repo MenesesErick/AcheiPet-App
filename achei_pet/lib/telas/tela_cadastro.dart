@@ -4,6 +4,7 @@ import 'package:achei_pet/servicos/pet_service.dart';
 import 'package:uuid/uuid.dart';
 import 'package:achei_pet/servicos/usuario_service.dart';
 import 'package:achei_pet/models/pet.dart';
+import 'package:achei_pet/telas/tela_perfil.dart';
 import 'package:achei_pet/utils/constantes.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/widgets/botao_formatado.dart';
@@ -181,7 +182,12 @@ class _TelaCadastroState extends State<TelaCadastro> {
           Padding(
             padding: const EdgeInsets.only(top: 10, right: 16),
             child: IconButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TelaPerfil()),
+                );
+              },
               icon: const Icon(Icons.account_circle_outlined, size: 50, color: Colors.black),
             ),
           ),

@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:achei_pet/telas/tela_cadastro.dart';
 import 'package:achei_pet/telas/tela_detalhes_pet.dart';
+import 'package:achei_pet/telas/tela_perfil.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:achei_pet/models/pet.dart';
@@ -221,7 +222,12 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
           Padding(
             padding: const EdgeInsets.only(top: 10, right: 16),
             child: IconButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TelaPerfil()),
+                );
+              },
               icon: const Icon(Icons.account_circle_outlined, size: 50, color: Colors.black),
             ),
           ),

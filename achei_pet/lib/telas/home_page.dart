@@ -1,6 +1,7 @@
 import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/servicos/pet_service.dart';
 import 'package:achei_pet/telas/tela_detalhes_pet.dart';
+import 'package:achei_pet/telas/tela_perfil.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/utils/constantes.dart';
 import 'package:achei_pet/widgets/campo_busca.dart';
@@ -27,6 +28,7 @@ class _HomePageState extends State<HomePage> {
     _buscaController.dispose();
     super.dispose();
   }
+
 
   List<Pet> get _petsFiltrados {
     final todos = PetService.getTodos();
@@ -70,7 +72,12 @@ class _HomePageState extends State<HomePage> {
           Padding(
             padding: const EdgeInsets.only(top: 10, right: 16),
             child: IconButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TelaPerfil()),
+                );
+              },
               icon: const Icon(Icons.account_circle_outlined, size: 50, color: Colors.black),
             ),
           ),
