@@ -1,4 +1,4 @@
-import 'package:achei_pet/servicos/usuario_service.dart';
+import 'package:achei_pet/controllers/usuario_controller.dart';
 import 'package:achei_pet/telas/tela_cadastro_usuario.dart';
 import 'package:achei_pet/telas/nav_bar.dart';
 import 'package:achei_pet/utils/cores.dart';
@@ -23,7 +23,7 @@ class _TelaInicialState extends State<TelaInicial> {
     final email = _emailController.text.trim();
     final senha = _senhaController.text;
 
-    final sucesso = UsuarioService.login(email, senha);
+    final sucesso = UsuarioController.fazerLogin(email: email, senha: senha);
 
     if (sucesso) {
       Navigator.pushReplacement(
@@ -65,11 +65,7 @@ class _TelaInicialState extends State<TelaInicial> {
                 const Text(
                   'Conectando pets perdidos\naos seus lares',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Cores.cinza,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 16, color: Cores.cinza, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 48),
 
@@ -80,8 +76,8 @@ class _TelaInicialState extends State<TelaInicial> {
                   keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 16),
-                
-                // NOTA: Para a senha ficar com '***', o CampoFormulario precisa ter a prop obscureText. 
+
+                // NOTA: Para a senha ficar com '***', o CampoFormulario precisa ter a prop obscureText.
                 // Por enquanto usamos TextFormField padrão para a senha.
                 TextFormField(
                   controller: _senhaController,
@@ -97,7 +93,7 @@ class _TelaInicialState extends State<TelaInicial> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
 
                 // Botão de Entrar
@@ -123,17 +119,12 @@ class _TelaInicialState extends State<TelaInicial> {
                         // Faz a navegação para a nova tela
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => const TelaCadastroUsuario(),
-                          ),
+                          MaterialPageRoute(builder: (context) => const TelaCadastroUsuario()),
                         );
                       },
                       child: const Text(
                         'Cadastre-se',
-                        style: TextStyle(
-                          color: Cores.botaoGeral,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(color: Cores.botaoGeral, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],

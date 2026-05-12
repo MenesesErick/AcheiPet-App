@@ -8,8 +8,7 @@ import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/utils/constantes.dart';
 import 'package:achei_pet/widgets/texto_formatado.dart';
-import 'package:achei_pet/servicos/pet_service.dart';
-import 'package:achei_pet/servicos/usuario_service.dart';
+import 'package:achei_pet/controllers/pet_controller.dart';
 
 class TelaMeusAnuncios extends StatefulWidget {
   const TelaMeusAnuncios({super.key});
@@ -48,7 +47,7 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
 
   void _carregarMeusAnuncios() {
     setState(() {
-      _meusAnuncios = PetService.getPorUsuario(UsuarioService.usuarioLogadoId);
+      _meusAnuncios = PetController.listarPetsDoUsuarioLogado();
     });
   }
 
@@ -113,15 +112,12 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
         content: Text('Tem certeza que deseja deletar o anúncio de ${pet.nome}?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => TelaDetalhesPet(pet: pet)),
-            ),
-            child: const Text('Deletar', style: TextStyle(color: Colors.red)),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
           ),
           TextButton(
             onPressed: () {
-              PetService.deletar(pet.isarId);
+              PetController.deletarPet(pet);
               setState(() {
                 _meusAnuncios.remove(pet);
 
@@ -170,7 +166,7 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
           ),
           TextButton(
             onPressed: () {
-              PetService.atualizarStatus(pet, novoStatus);
+              PetController.atualizarStatus(pet, novoStatus);
               setState(() {
                 pet.status = novoStatus;
               });

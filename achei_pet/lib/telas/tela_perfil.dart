@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:achei_pet/models/usuario.dart';
-import 'package:achei_pet/servicos/usuario_service.dart';
+import 'package:achei_pet/controllers/usuario_controller.dart';
 import 'package:achei_pet/telas/tela_editar_perfil.dart';
 import 'package:achei_pet/telas/tela_inicial.dart';
 import 'package:achei_pet/utils/cores.dart';
@@ -28,7 +28,7 @@ class _TelaPerfilState extends State<TelaPerfil> {
 
   void _carregarUsuario() {
     setState(() {
-      _usuario = UsuarioService.buscarPorId(UsuarioService.usuarioLogadoId) ??
+      _usuario = UsuarioController.buscarUsuarioLogado() ??
           Usuario(
             id: '0',
             nome: 'Usuário Desconhecido',

@@ -1,11 +1,8 @@
 import 'dart:io';
-import 'package:achei_pet/servicos/usuario_service.dart';
-import 'package:achei_pet/models/usuario.dart';
 import 'package:flutter/foundation.dart';
-import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
+import 'package:achei_pet/controllers/usuario_controller.dart';
 import 'package:achei_pet/telas/nav_bar.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/widgets/botao_formatado.dart';
@@ -76,20 +73,13 @@ class _TelaCadastroUsuarioState extends State<TelaCadastroUsuario> {
         return;
       }
 
-      final novoId = const Uuid().v4();
-      
-      final novoUsuario = Usuario(
-        id: novoId,
+      UsuarioController.cadastrarUsuario(
         nome: _nomeController.text,
-        email: _emailController.text.trim().toLowerCase(),
-        telefonePessoal: _telefoneController.text,
-        fotoUrl: _imagemSelecionada?.path,
+        email: _emailController.text,
+        telefone: _telefoneController.text,
         senha: _senhaController.text,
+        fotoUrl: _imagemSelecionada?.path,
       );
-
-      UsuarioService.salvar(novoUsuario);
-      UsuarioService.usuarioLogadoId = novoId;
-      UsuarioService.debugListarTodos();
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

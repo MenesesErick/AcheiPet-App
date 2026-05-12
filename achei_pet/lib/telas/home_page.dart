@@ -1,5 +1,5 @@
 import 'package:achei_pet/models/pet.dart';
-import 'package:achei_pet/servicos/pet_service.dart';
+import 'package:achei_pet/controllers/pet_controller.dart';
 import 'package:achei_pet/telas/tela_detalhes_pet.dart';
 import 'package:achei_pet/telas/tela_perfil.dart';
 import 'package:achei_pet/utils/cores.dart';
@@ -31,29 +31,16 @@ class _HomePageState extends State<HomePage> {
 
 
   List<Pet> get _petsFiltrados {
-    final todos = PetService.getTodos();
-    List<Pet> petsPorStatus = switch (_filtroAtual) {
-      FiltroPet.TODOS => todos,
-      FiltroPet.ENCONTRADOS => todos.where((p) => p.status == StatusPet.ENCONTRADO).toList(),
-      FiltroPet.PERDIDOS => todos.where((p) => p.status == StatusPet.PERDIDO).toList(),
+    final status = switch (_filtroAtual) {
+      FiltroPet.TODOS => null,
+      FiltroPet.PERDIDOS => StatusPet.PERDIDO,
+      FiltroPet.ENCONTRADOS => StatusPet.ENCONTRADO,
     };
 
-    if (_textoBusca.isEmpty) return petsPorStatus;
-
-    final buscaMinuscula = _textoBusca.toLowerCase();
-
-    return petsPorStatus.where((pet) {
-      // Busca por Nome
-      if (pet.nome.toLowerCase().contains(buscaMinuscula)) return true;
-
-      // Busca por Localização
-      if (pet.localizacao.toLowerCase().contains(buscaMinuscula)) return true;
-
-      // Busca por Raça (Ajustado para lidar com o null)
-      if (pet.raca != null && pet.raca!.toLowerCase().contains(buscaMinuscula)) return true;
-
-      return false;
-    }).toList();
+    return PetController.listarPets(
+      status: status,
+      termoBusca: _textoBusca,
+    );
   }
 
   void _navegarParaDetalhes(Pet pet) {

@@ -19,19 +19,10 @@ class UsuarioService {
     return IsarService.db.usuarios.where().findAllSync();
   }
 
-  static void debugListarTodos() {
-    final usuarios = listarTodos();
-    print('[UsuarioService] Total cadastrado: ${usuarios.length}');
-    for (final u in usuarios) {
-      print('  → id: ${u.id} | nome: ${u.nome} | email: ${u.email} | senha: ${u.senha ?? "(sem senha)"}');
-    }
-  }
-
   static bool login(String email, String senha) {
     final emailNormalizado = email.trim().toLowerCase();
 
     print('[UsuarioService] Tentando login com email: "$emailNormalizado"');
-    debugListarTodos();
 
     final usuario = IsarService.db.usuarios
         .filter()
