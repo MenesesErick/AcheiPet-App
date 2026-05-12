@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:achei_pet/controllers/pet_controller.dart';
 import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/telas/tela_perfil.dart';
@@ -7,8 +5,8 @@ import 'package:achei_pet/utils/constantes.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/widgets/botao_formatado.dart';
 import 'package:achei_pet/widgets/campo_formulario.dart';
+import 'package:achei_pet/widgets/imagem_app.dart';
 import 'package:achei_pet/widgets/texto_formatado.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -75,12 +73,13 @@ class _TelaCadastroState extends State<TelaCadastro> {
     }
   }
 
-  void _salvarCadastro() {
-    final temImagem = _imagemSelecionada != null || (_modoEdicao && _imagemAtualUrl != null && _imagemAtualUrl!.isNotEmpty);
-    if (!temImagem) {
+  Future<void> _salvarCadastro() async {
+    final imagemUrl = _imagemSelecionada?.path ?? _imagemAtualUrl;
+    final erroImagem = PetController.validarCadastroPet(imagemUrl: imagemUrl);
+    if (erroImagem != null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, adicione uma foto do pet do seu computador.'),
+        SnackBar(
+          content: Text(erroImagem),
           backgroundColor: Cores.vermehoPerdido,
           behavior: SnackBarBehavior.floating,
         ),
@@ -89,22 +88,26 @@ class _TelaCadastroState extends State<TelaCadastro> {
     }
 
     if (_formKey.currentState!.validate()) {
-      final petAtualizado = PetController.salvarPet(
+      final petAtualizado = await PetController.salvarPet(
         petOriginal: widget.petParaEditar,
         nome: _nomeController.text,
         raca: _racaController.text,
         descricao: _descricaoController.text,
         localizacao: _localizacaoController.text,
-        imagemUrl: _imagemSelecionada?.path ?? _imagemAtualUrl!,
+        imagemUrl: imagemUrl!,
         status: _statusSelecionado,
         nomeDono: _nomeDonoController.text,
         telefoneContato: _telefoneController.text,
       );
 
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            _modoEdicao ? 'Anúncio atualizado com sucesso!' : 'Pet cadastrado com sucesso!',
+            _modoEdicao
+                ? 'Anúncio atualizado com sucesso!'
+                : 'Pet cadastrado com sucesso!',
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           backgroundColor: Cores.verdeEncontrado,
@@ -119,7 +122,6 @@ class _TelaCadastroState extends State<TelaCadastro> {
 
       _formKey.currentState!.reset();
       setState(() {
-
         _statusSelecionado = StatusPet.PERDIDO;
         _imagemSelecionada = null;
         _nomeController.clear();
@@ -132,25 +134,8 @@ class _TelaCadastroState extends State<TelaCadastro> {
     }
   }
 
-  DecorationImage? _obterImagemDeFundo() {
-    if (_imagemSelecionada != null) {
-      if (kIsWeb) {
-        return DecorationImage(image: NetworkImage(_imagemSelecionada!.path), fit: BoxFit.cover);
-      } else {
-        return DecorationImage(image: FileImage(File(_imagemSelecionada!.path)), fit: BoxFit.cover);
-      }
-    }
-    if (_imagemAtualUrl != null && _imagemAtualUrl!.isNotEmpty) {
-      if (_imagemAtualUrl!.startsWith('assets/')) {
-        return DecorationImage(image: AssetImage(_imagemAtualUrl!), fit: BoxFit.cover);
-      } else if (kIsWeb) {
-        return DecorationImage(image: NetworkImage(_imagemAtualUrl!), fit: BoxFit.cover);
-      } else {
-        return DecorationImage(image: FileImage(File(_imagemAtualUrl!)), fit: BoxFit.cover);
-      }
-    }
-    return null;
-  }
+  DecorationImage? _obterImagemDeFundo() =>
+      ImagemApp.decoration(_imagemSelecionada?.path ?? _imagemAtualUrl);
 
   @override
   Widget build(BuildContext context) {
@@ -165,7 +150,11 @@ class _TelaCadastroState extends State<TelaCadastro> {
             const SizedBox(height: 4),
             Text(
               _modoEdicao ? 'Editar Anúncio' : 'Novo Anúncio',
-              style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.normal),
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+                fontWeight: FontWeight.normal,
+              ),
             ),
           ],
         ),
@@ -179,7 +168,11 @@ class _TelaCadastroState extends State<TelaCadastro> {
                   MaterialPageRoute(builder: (context) => const TelaPerfil()),
                 );
               },
-              icon: const Icon(Icons.account_circle_outlined, size: 50, color: Colors.black),
+              icon: const Icon(
+                Icons.account_circle_outlined,
+                size: 50,
+                color: Colors.black,
+              ),
             ),
           ),
         ],
@@ -202,11 +195,18 @@ class _TelaCadastroState extends State<TelaCadastro> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.grey.shade300, width: 2),
+                        border: Border.all(
+                          color: Colors.grey.shade300,
+                          width: 2,
+                        ),
                         image: _obterImagemDeFundo(),
                       ),
                       child: _imagemSelecionada == null
-                          ? const Icon(Icons.pets, size: 80, color: Cores.iconesOpacos)
+                          ? const Icon(
+                              Icons.pets,
+                              size: 80,
+                              color: Cores.iconesOpacos,
+                            )
                           : null,
                     ),
                     Positioned(
@@ -220,7 +220,11 @@ class _TelaCadastroState extends State<TelaCadastro> {
                             color: Cores.botaoGeral,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.photo_library, color: Colors.white, size: 28),
+                          child: const Icon(
+                            Icons.photo_library,
+                            color: Colors.white,
+                            size: 28,
+                          ),
                         ),
                       ),
                     ),
@@ -234,7 +238,10 @@ class _TelaCadastroState extends State<TelaCadastro> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: CampoFormulario(hint: 'Nome do pet', controller: _nomeController),
+                    child: CampoFormulario(
+                      hint: 'Nome do pet',
+                      controller: _nomeController,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -256,7 +263,8 @@ class _TelaCadastroState extends State<TelaCadastro> {
                       hint: 'Telefone para contato',
                       controller: _telefoneController,
                       keyboardType: TextInputType.phone,
-                      validator: (value) => value!.isEmpty ? 'Informe um telefone' : null,
+                      validator: (value) =>
+                          value!.isEmpty ? 'Informe um telefone' : null,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -265,7 +273,8 @@ class _TelaCadastroState extends State<TelaCadastro> {
                       hint: 'Digite o nome do dono',
                       controller: _nomeDonoController,
                       keyboardType: TextInputType.text,
-                      validator: (value) => value!.isEmpty ? 'Informe o dono' : null,
+                      validator: (value) =>
+                          value!.isEmpty ? 'Informe o dono' : null,
                     ),
                   ),
                 ],
@@ -276,7 +285,8 @@ class _TelaCadastroState extends State<TelaCadastro> {
               CampoFormulario(
                 hint: 'Localização (Ex: Taquaralto, Palmas - TO)',
                 controller: _localizacaoController,
-                validator: (value) => value!.isEmpty ? 'Informe onde foi visto/perdido' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Informe onde foi visto/perdido' : null,
               ),
               const SizedBox(height: 16),
 
@@ -284,7 +294,8 @@ class _TelaCadastroState extends State<TelaCadastro> {
                 hint: 'Digite uma descrição para melhor reconhecimento',
                 controller: _descricaoController,
                 maxLines: 5,
-                validator: (value) => value!.isEmpty ? 'Adicione uma descrição' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Adicione uma descrição' : null,
               ),
               const SizedBox(height: 40),
 

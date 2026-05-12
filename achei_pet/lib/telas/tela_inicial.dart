@@ -18,12 +18,28 @@ class TelaInicial extends StatefulWidget {
 class _TelaInicialState extends State<TelaInicial> {
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
+  bool _carregandoLogin = false;
 
-  void _fazerLogin() {
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _senhaController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fazerLogin() async {
     final email = _emailController.text.trim();
     final senha = _senhaController.text;
 
-    final sucesso = UsuarioController.fazerLogin(email: email, senha: senha);
+    setState(() => _carregandoLogin = true);
+    final sucesso = await UsuarioController.fazerLogin(
+      email: email,
+      senha: senha,
+    );
+
+    if (!mounted) return;
+
+    setState(() => _carregandoLogin = false);
 
     if (sucesso) {
       Navigator.pushReplacement(
@@ -65,7 +81,11 @@ class _TelaInicialState extends State<TelaInicial> {
                 const Text(
                   'Conectando pets perdidos\naos seus lares',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Cores.cinza, fontWeight: FontWeight.w500),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Cores.cinza,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 const SizedBox(height: 48),
 
@@ -86,7 +106,10 @@ class _TelaInicialState extends State<TelaInicial> {
                     hintText: 'Senha',
                     filled: true,
                     fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 18,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(20),
                       borderSide: const BorderSide(color: Color(0x4D000000)),
@@ -98,10 +121,10 @@ class _TelaInicialState extends State<TelaInicial> {
 
                 // Botão de Entrar
                 BotaoFormatado(
-                  texto: 'Entrar',
+                  texto: _carregandoLogin ? 'Entrando...' : 'Entrar',
                   altura: 55,
                   tamanhoFonte: 18,
-                  onPressed: _fazerLogin,
+                  onPressed: _carregandoLogin ? null : _fazerLogin,
                 ),
 
                 const SizedBox(height: 24),
@@ -112,19 +135,27 @@ class _TelaInicialState extends State<TelaInicial> {
                   children: [
                     const Text(
                       'Não tem uma conta?',
-                      style: TextStyle(color: Cores.cinza, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        color: Cores.cinza,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     TextButton(
                       onPressed: () {
                         // Faz a navegação para a nova tela
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const TelaCadastroUsuario()),
+                          MaterialPageRoute(
+                            builder: (context) => const TelaCadastroUsuario(),
+                          ),
                         );
                       },
                       child: const Text(
                         'Cadastre-se',
-                        style: TextStyle(color: Cores.botaoGeral, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: Cores.botaoGeral,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],

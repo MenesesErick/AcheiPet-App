@@ -1,22 +1,49 @@
 import 'package:achei_pet/models/usuario.dart';
+import 'package:achei_pet/servicos/sessao_service.dart';
 import 'package:achei_pet/servicos/usuario_service.dart';
 import 'package:uuid/uuid.dart';
 
 class UsuarioController {
-  static bool fazerLogin({
+  static Future<bool> fazerLogin({
     required String email,
     required String senha,
-  }) {
-    return UsuarioService.login(email, senha);
+  }) async {
+    final usuario = await UsuarioService.buscarPorCredenciais(email, senha);
+    if (usuario == null) {
+      return false;
+    }
+
+    SessaoService.autenticar(usuario.id);
+    return true;
   }
 
-  static Usuario cadastrarUsuario({
+  static String? validarCadastroUsuario({
+    required String senha,
+    required String confirmarSenha,
+  }) {
+    if (senha != confirmarSenha) {
+      return 'As senhas não coincidem!';
+    }
+
+    return null;
+  }
+
+  static Future<Usuario> cadastrarUsuario({
     required String nome,
     required String email,
     required String telefone,
     required String senha,
+    required String confirmarSenha,
     String? fotoUrl,
-  }) {
+  }) async {
+    final erroValidacao = validarCadastroUsuario(
+      senha: senha,
+      confirmarSenha: confirmarSenha,
+    );
+    if (erroValidacao != null) {
+      throw ArgumentError(erroValidacao);
+    }
+
     final novoUsuario = Usuario(
       id: const Uuid().v4(),
       nome: nome.trim(),
@@ -26,25 +53,23 @@ class UsuarioController {
       senha: senha,
     );
 
-    UsuarioService.salvar(novoUsuario);
-    UsuarioService.usuarioLogadoId = novoUsuario.id;
+    await UsuarioService.salvar(novoUsuario);
+    SessaoService.autenticar(novoUsuario.id);
 
     return novoUsuario;
   }
 
-  static Usuario? buscarUsuarioLogado() {
-    return UsuarioService.buscarPorId(
-      UsuarioService.usuarioLogadoId,
-    );
+  static Future<Usuario?> buscarUsuarioLogado() {
+    return UsuarioService.buscarPorId(SessaoService.usuarioLogadoId);
   }
 
-  static Usuario atualizarPerfil({
+  static Future<Usuario> atualizarPerfil({
     required Usuario usuarioOriginal,
     required String nome,
     required String email,
     required String telefone,
     String? novaFotoUrl,
-  }) {
+  }) async {
     final usuarioAtualizado = Usuario(
       id: usuarioOriginal.id,
       nome: nome.trim(),
@@ -54,7 +79,7 @@ class UsuarioController {
       senha: usuarioOriginal.senha,
     )..isarId = usuarioOriginal.isarId;
 
-    UsuarioService.salvar(usuarioAtualizado);
+    await UsuarioService.salvar(usuarioAtualizado);
 
     return usuarioAtualizado;
   }

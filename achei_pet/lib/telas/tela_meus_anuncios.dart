@@ -1,14 +1,12 @@
-import 'dart:io';
-import 'package:achei_pet/telas/tela_cadastro.dart';
-import 'package:achei_pet/telas/tela_detalhes_pet.dart';
-import 'package:achei_pet/telas/tela_perfil.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:achei_pet/models/pet.dart';
-import 'package:achei_pet/utils/cores.dart';
-import 'package:achei_pet/utils/constantes.dart';
-import 'package:achei_pet/widgets/texto_formatado.dart';
 import 'package:achei_pet/controllers/pet_controller.dart';
+import 'package:achei_pet/models/pet.dart';
+import 'package:achei_pet/telas/tela_cadastro.dart';
+import 'package:achei_pet/telas/tela_perfil.dart';
+import 'package:achei_pet/utils/constantes.dart';
+import 'package:achei_pet/utils/cores.dart';
+import 'package:achei_pet/widgets/imagem_app.dart';
+import 'package:achei_pet/widgets/texto_formatado.dart';
+import 'package:flutter/material.dart';
 
 class TelaMeusAnuncios extends StatefulWidget {
   const TelaMeusAnuncios({super.key});
@@ -19,6 +17,7 @@ class TelaMeusAnuncios extends StatefulWidget {
 
 class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
   List<Pet> _meusAnuncios = [];
+  bool _carregandoAnuncios = true;
 
   // ✅ Controller para o carrossel
   late PageController _pageController;
@@ -29,13 +28,12 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
   @override
   void initState() {
     super.initState();
-    _carregarMeusAnuncios();
-
     // ✅ Inicializa o PageController
     _pageController = PageController(
       viewportFraction: 0.85, // 85% da largura da tela
       initialPage: 0,
     );
+    _carregarMeusAnuncios();
   }
 
   @override
@@ -45,63 +43,15 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
     super.dispose();
   }
 
-  void _carregarMeusAnuncios() {
+  Future<void> _carregarMeusAnuncios() async {
+    final anuncios = await PetController.listarPetsDoUsuarioLogado();
+
+    if (!mounted) return;
+
     setState(() {
-      _meusAnuncios = PetController.listarPetsDoUsuarioLogado();
+      _meusAnuncios = anuncios;
+      _carregandoAnuncios = false;
     });
-  }
-
-  // Função inteligente para carregar a imagem
-  Widget _carregarImagem(String url) {
-    if (url.isEmpty) {
-      return Container(
-        width: double.infinity,
-        height: 250,
-        color: Colors.grey.shade200,
-        child: const Icon(Icons.pets, size: 80, color: Colors.grey),
-      );
-    }
-
-    if (url.startsWith('assets/')) {
-      return Image.asset(
-        url,
-        width: double.infinity,
-        height: 250,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Container(
-          width: double.infinity,
-          height: 250,
-          color: Colors.grey.shade200,
-          child: const Icon(Icons.pets, size: 80, color: Colors.grey),
-        ),
-      );
-    } else if (kIsWeb) {
-      return Image.network(
-        url,
-        width: double.infinity,
-        height: 250,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Container(
-          width: double.infinity,
-          height: 250,
-          color: Colors.grey.shade200,
-          child: const Icon(Icons.pets, size: 80, color: Colors.grey),
-        ),
-      );
-    } else {
-      return Image.file(
-        File(url),
-        width: double.infinity,
-        height: 250,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Container(
-          width: double.infinity,
-          height: 250,
-          color: Colors.grey.shade200,
-          child: const Icon(Icons.pets, size: 80, color: Colors.grey),
-        ),
-      );
-    }
   }
 
   void _deletarAnuncio(Pet pet) {
@@ -109,15 +59,22 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Deletar Anúncio?'),
-        content: Text('Tem certeza que deseja deletar o anúncio de ${pet.nome}?'),
+        content: Text(
+          'Tem certeza que deseja deletar o anúncio de ${pet.nome}?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancelar'),
           ),
           TextButton(
-            onPressed: () {
-              PetController.deletarPet(pet);
+            onPressed: () async {
+              final navigator = Navigator.of(context);
+              final messenger = ScaffoldMessenger.of(this.context);
+
+              await PetController.deletarPet(pet);
+              if (!mounted) return;
+
               setState(() {
                 _meusAnuncios.remove(pet);
 
@@ -131,8 +88,8 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                   _pageController.jumpToPage(_paginaAtual);
                 }
               });
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
+              navigator.pop();
+              messenger.showSnackBar(
                 const SnackBar(
                   content: Text('Anúncio deletado com sucesso'),
                   backgroundColor: Cores.vermehoPerdido,
@@ -148,11 +105,15 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
   }
 
   void _alterarStatus(Pet pet) {
-    final novoStatus =
-        pet.status == StatusPet.PERDIDO ? StatusPet.ENCONTRADO : StatusPet.PERDIDO;
-    final novoStatusTexto = novoStatus == StatusPet.PERDIDO ? 'Perdido' : 'Encontrado';
-    final corStatus =
-        novoStatus == StatusPet.ENCONTRADO ? Cores.verdeEncontrado : Cores.vermehoPerdido;
+    final novoStatus = pet.status == StatusPet.PERDIDO
+        ? StatusPet.ENCONTRADO
+        : StatusPet.PERDIDO;
+    final novoStatusTexto = novoStatus == StatusPet.PERDIDO
+        ? 'Perdido'
+        : 'Encontrado';
+    final corStatus = novoStatus == StatusPet.ENCONTRADO
+        ? Cores.verdeEncontrado
+        : Cores.vermehoPerdido;
 
     showDialog(
       context: context,
@@ -165,13 +126,18 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
             child: const Text('Cancelar'),
           ),
           TextButton(
-            onPressed: () {
-              PetController.atualizarStatus(pet, novoStatus);
+            onPressed: () async {
+              final navigator = Navigator.of(context);
+              final messenger = ScaffoldMessenger.of(this.context);
+
+              await PetController.atualizarStatus(pet, novoStatus);
+              if (!mounted) return;
+
               setState(() {
                 pet.status = novoStatus;
               });
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
+              navigator.pop();
+              messenger.showSnackBar(
                 SnackBar(
                   content: Text('${pet.nome} marcado como $novoStatusTexto!'),
                   backgroundColor: corStatus,
@@ -224,13 +190,21 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                   MaterialPageRoute(builder: (context) => const TelaPerfil()),
                 );
               },
-              icon: const Icon(Icons.account_circle_outlined, size: 50, color: Colors.black),
+              icon: const Icon(
+                Icons.account_circle_outlined,
+                size: 50,
+                color: Colors.black,
+              ),
             ),
           ),
         ],
         backgroundColor: Colors.white,
       ),
-      body: _meusAnuncios.isEmpty ? _buildTelaVazia() : _buildCarrossel(),
+      body: _carregandoAnuncios
+          ? const Center(child: CircularProgressIndicator())
+          : _meusAnuncios.isEmpty
+          ? _buildTelaVazia()
+          : _buildCarrossel(),
     );
   }
 
@@ -240,7 +214,11 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.announcement_outlined, size: 120, color: Colors.grey.shade300),
+          Icon(
+            Icons.announcement_outlined,
+            size: 120,
+            color: Colors.grey.shade300,
+          ),
           const SizedBox(height: 20),
           Text(
             'Nenhum anúncio criado',
@@ -259,7 +237,10 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
           const SizedBox(height: 40),
           ElevatedButton.icon(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => TelaCadastro()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TelaCadastro()),
+              );
             },
             icon: const Icon(Icons.add),
             label: const Text('Criar Anúncio'),
@@ -291,12 +272,18 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                   children: [
                     const Text(
                       'Meus Anúncios',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${_meusAnuncios.length} anúncio${_meusAnuncios.length > 1 ? 's' : ''}',
-                      style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   ],
                 ),
@@ -312,7 +299,10 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Cores.botaoGeral,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                   ),
                 ),
               ],
@@ -353,7 +343,9 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                       width: _paginaAtual == index ? 30 : 10,
                       height: 10,
                       decoration: BoxDecoration(
-                        color: _paginaAtual == index ? Cores.botaoGeral : Colors.grey.shade300,
+                        color: _paginaAtual == index
+                            ? Cores.botaoGeral
+                            : Colors.grey.shade300,
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
@@ -394,7 +386,9 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         child: Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           elevation: 4,
           child: Stack(
             children: [
@@ -407,7 +401,12 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                         topLeft: Radius.circular(16),
                         topRight: Radius.circular(16),
                       ),
-                      child: _carregarImagem(pet.imagemUrl),
+                      child: ImagemApp.carregar(
+                        pet.imagemUrl,
+                        width: double.infinity,
+                        height: 250,
+                        placeholderIconSize: 80,
+                      ),
                     ),
                   ),
                 ],
@@ -418,9 +417,14 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                 top: 12,
                 right: 12,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: isPerdido ? Cores.vermehoPerdido : Cores.verdeEncontrado,
+                    color: isPerdido
+                        ? Cores.vermehoPerdido
+                        : Cores.verdeEncontrado,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
@@ -451,7 +455,10 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.7),
+                      ],
                     ),
                     borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(16),
@@ -473,7 +480,10 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                       const SizedBox(height: 4),
                       Text(
                         pet.raca ?? 'Raça não especificada',
-                        style: const TextStyle(fontSize: 13, color: Colors.white70),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.white70,
+                        ),
                       ),
                     ],
                   ),
@@ -504,7 +514,10 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                 children: [
                   Text(
                     petAtual.nome,
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -525,7 +538,9 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
               child: Text(
                 isPerdido ? 'Perdido' : 'Encontrado',
                 style: TextStyle(
-                  color: isPerdido ? Cores.vermehoPerdido : Cores.verdeEncontrado,
+                  color: isPerdido
+                      ? Cores.vermehoPerdido
+                      : Cores.verdeEncontrado,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -539,7 +554,11 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
         // Localização
         Row(
           children: [
-            const Icon(Icons.location_on_outlined, size: 18, color: Cores.botaoGeral),
+            const Icon(
+              Icons.location_on_outlined,
+              size: 18,
+              color: Cores.botaoGeral,
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
@@ -573,10 +592,14 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
               isPerdido ? 'Marcar como Encontrado' : 'Marcar como Perdido',
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: isPerdido ? Cores.verdeEncontrado : Cores.vermehoPerdido,
+              backgroundColor: isPerdido
+                  ? Cores.verdeEncontrado
+                  : Cores.vermehoPerdido,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
           ),
         ),

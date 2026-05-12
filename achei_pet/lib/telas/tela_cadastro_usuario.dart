@@ -1,5 +1,3 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:achei_pet/controllers/usuario_controller.dart';
@@ -7,6 +5,7 @@ import 'package:achei_pet/telas/nav_bar.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/widgets/botao_formatado.dart';
 import 'package:achei_pet/widgets/campo_formulario.dart';
+import 'package:achei_pet/widgets/imagem_app.dart';
 import 'package:achei_pet/widgets/texto_formatado.dart';
 
 class TelaCadastroUsuario extends StatefulWidget {
@@ -48,24 +47,20 @@ class _TelaCadastroUsuarioState extends State<TelaCadastroUsuario> {
     }
   }
 
-  DecorationImage? _obterImagemDeFundo() {
-    if (_imagemSelecionada != null) {
-      if (kIsWeb) {
-        return DecorationImage(image: NetworkImage(_imagemSelecionada!.path), fit: BoxFit.cover);
-      } else {
-        return DecorationImage(image: FileImage(File(_imagemSelecionada!.path)), fit: BoxFit.cover);
-      }
-    }
-    return null;
-  }
+  DecorationImage? _obterImagemDeFundo() =>
+      ImagemApp.decoration(_imagemSelecionada?.path);
 
-  void _criarConta() {
+  Future<void> _criarConta() async {
     if (_formKey.currentState!.validate()) {
-      // Validação extra: As senhas precisam ser iguais
-      if (_senhaController.text != _confirmarSenhaController.text) {
+      final erroValidacao = UsuarioController.validarCadastroUsuario(
+        senha: _senhaController.text,
+        confirmarSenha: _confirmarSenhaController.text,
+      );
+
+      if (erroValidacao != null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('As senhas não coincidem!'),
+          SnackBar(
+            content: Text(erroValidacao),
             backgroundColor: Cores.vermehoPerdido,
             behavior: SnackBarBehavior.floating,
           ),
@@ -73,13 +68,16 @@ class _TelaCadastroUsuarioState extends State<TelaCadastroUsuario> {
         return;
       }
 
-      UsuarioController.cadastrarUsuario(
+      await UsuarioController.cadastrarUsuario(
         nome: _nomeController.text,
         email: _emailController.text,
         telefone: _telefoneController.text,
         senha: _senhaController.text,
+        confirmarSenha: _confirmarSenhaController.text,
         fotoUrl: _imagemSelecionada?.path,
       );
+
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -133,7 +131,11 @@ class _TelaCadastroUsuarioState extends State<TelaCadastroUsuario> {
                         image: _obterImagemDeFundo(),
                       ),
                       child: _imagemSelecionada == null
-                          ? const Icon(Icons.person, size: 70, color: Cores.iconesOpacos)
+                          ? const Icon(
+                              Icons.person,
+                              size: 70,
+                              color: Cores.iconesOpacos,
+                            )
                           : null,
                     ),
                     Positioned(
@@ -147,7 +149,11 @@ class _TelaCadastroUsuarioState extends State<TelaCadastroUsuario> {
                             color: Cores.botaoGeral,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.camera_alt, color: Colors.white, size: 22),
+                          child: const Icon(
+                            Icons.camera_alt,
+                            color: Colors.white,
+                            size: 22,
+                          ),
                         ),
                       ),
                     ),
@@ -166,7 +172,8 @@ class _TelaCadastroUsuarioState extends State<TelaCadastroUsuario> {
               CampoFormulario(
                 hint: 'Nome Completo',
                 controller: _nomeController,
-                validator: (value) => value!.isEmpty ? 'Informe seu nome' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Informe seu nome' : null,
               ),
               const SizedBox(height: 16),
 
@@ -186,7 +193,8 @@ class _TelaCadastroUsuarioState extends State<TelaCadastroUsuario> {
                 hint: 'Telefone (WhatsApp)',
                 controller: _telefoneController,
                 keyboardType: TextInputType.phone,
-                validator: (value) => value!.isEmpty ? 'Informe seu telefone' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Informe seu telefone' : null,
               ),
               const SizedBox(height: 16),
 
@@ -198,7 +206,8 @@ class _TelaCadastroUsuarioState extends State<TelaCadastroUsuario> {
                       hint: 'Senha',
                       controller: _senhaController,
                       obscureText: true, // <--- Usando a propriedade nova!
-                      validator: (value) => value!.length < 6 ? 'Mínimo 6 caracteres' : null,
+                      validator: (value) =>
+                          value!.length < 6 ? 'Mínimo 6 caracteres' : null,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -207,7 +216,8 @@ class _TelaCadastroUsuarioState extends State<TelaCadastroUsuario> {
                       hint: 'Confirmar Senha',
                       controller: _confirmarSenhaController,
                       obscureText: true, // <--- Usando a propriedade nova!
-                      validator: (value) => value!.isEmpty ? 'Confirme a senha' : null,
+                      validator: (value) =>
+                          value!.isEmpty ? 'Confirme a senha' : null,
                     ),
                   ),
                 ],

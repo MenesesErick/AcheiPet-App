@@ -3,31 +3,28 @@ import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/servicos/isar_service.dart';
 
 class PetService {
-  static List<Pet> getTodos() {
-    return IsarService.db.pets.where().findAllSync();
+  static Future<List<Pet>> getTodos() {
+    return IsarService.db.pets.where().findAll();
   }
 
-  static List<Pet> getPorUsuario(String usuarioId) {
-    return IsarService.db.pets
-        .filter()
-        .usuarioIdEqualTo(usuarioId)
-        .findAllSync();
+  static Future<List<Pet>> getPorUsuario(String usuarioId) {
+    return IsarService.db.pets.filter().usuarioIdEqualTo(usuarioId).findAll();
   }
 
-  static void salvar(Pet pet) {
-    IsarService.db.writeTxnSync(() {
-      IsarService.db.pets.putSync(pet);
+  static Future<void> salvar(Pet pet) async {
+    await IsarService.db.writeTxn(() async {
+      await IsarService.db.pets.put(pet);
     });
   }
 
-  static void deletar(Id isarId) {
-    IsarService.db.writeTxnSync(() {
-      IsarService.db.pets.deleteSync(isarId);
+  static Future<bool> deletar(Id isarId) {
+    return IsarService.db.writeTxn(() {
+      return IsarService.db.pets.delete(isarId);
     });
   }
 
-  static void atualizarStatus(Pet pet, StatusPet novoStatus) {
+  static Future<void> atualizarStatus(Pet pet, StatusPet novoStatus) {
     pet.status = novoStatus;
-    salvar(pet);
+    return salvar(pet);
   }
 }

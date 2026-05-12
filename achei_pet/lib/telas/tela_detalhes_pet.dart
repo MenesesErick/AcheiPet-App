@@ -1,65 +1,12 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/utils/cores.dart';
+import 'package:achei_pet/widgets/imagem_app.dart';
 
 class TelaDetalhesPet extends StatelessWidget {
   final Pet pet;
 
   const TelaDetalhesPet({super.key, required this.pet});
-
-  Widget _carregarImagem(String url) {
-    if (url.isEmpty) {
-      return Container(
-        width: double.infinity,
-        height: 300,
-        color: Colors.grey.shade200,
-        child: const Icon(Icons.pets, size: 80, color: Colors.grey),
-      );
-    }
-
-    if (url.startsWith('assets/')) {
-      return Image.asset(
-        url,
-        width: double.infinity,
-        height: 300,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Container(
-          width: double.infinity,
-          height: 300,
-          color: Colors.grey.shade200,
-          child: const Icon(Icons.pets, size: 80, color: Colors.grey),
-        ),
-      );
-    } else if (kIsWeb) {
-      return Image.network(
-        url,
-        width: double.infinity,
-        height: 300,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Container(
-          width: double.infinity,
-          height: 300,
-          color: Colors.grey.shade200,
-          child: const Icon(Icons.pets, size: 80, color: Colors.grey),
-        ),
-      );
-    } else {
-      return Image.file(
-        File(url),
-        width: double.infinity,
-        height: 300,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Container(
-          width: double.infinity,
-          height: 300,
-          color: Colors.grey.shade200,
-          child: const Icon(Icons.pets, size: 80, color: Colors.grey),
-        ),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +31,12 @@ class TelaDetalhesPet extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _carregarImagem(pet.imagemUrl),
+            ImagemApp.carregar(
+              pet.imagemUrl,
+              width: double.infinity,
+              height: 300,
+              placeholderIconSize: 80,
+            ),
 
             Padding(
               padding: const EdgeInsets.all(16),
@@ -147,7 +99,9 @@ class TelaDetalhesPet extends StatelessWidget {
                   _buildInfoSection(
                     icon: Icons.pets_outlined,
                     titulo: 'Raça',
-                    conteudo: pet.raca ?? 'Não informada', // Lidando com a possibilidade de null
+                    conteudo:
+                        pet.raca ??
+                        'Não informada', // Lidando com a possibilidade de null
                   ),
 
                   const SizedBox(height: 16),
@@ -175,7 +129,9 @@ class TelaDetalhesPet extends StatelessWidget {
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Funcionalidade de compartilhamento em desenvolvimento'),
+                                content: Text(
+                                  'Funcionalidade de compartilhamento em desenvolvimento',
+                                ),
                               ),
                             );
                           },
@@ -194,7 +150,9 @@ class TelaDetalhesPet extends StatelessWidget {
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Funcionalidade de contato em desenvolvimento'),
+                                content: Text(
+                                  'Funcionalidade de contato em desenvolvimento',
+                                ),
                               ),
                             );
                           },
@@ -245,11 +203,7 @@ class TelaDetalhesPet extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           conteudo,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.grey,
-            height: 1.5,
-          ),
+          style: const TextStyle(fontSize: 14, color: Colors.grey, height: 1.5),
         ),
       ],
     );

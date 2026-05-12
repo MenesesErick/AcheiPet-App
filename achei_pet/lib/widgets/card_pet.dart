@@ -1,6 +1,5 @@
-import 'dart:io';
-import 'package:flutter/foundation.dart'; // Necessário para usar o kIsWeb
 import 'package:achei_pet/utils/cores.dart';
+import 'package:achei_pet/widgets/imagem_app.dart';
 import 'package:flutter/material.dart';
 import 'package:achei_pet/models/pet.dart';
 
@@ -9,65 +8,6 @@ class CardPet extends StatelessWidget {
   final VoidCallback? onVerDetalhes;
 
   const CardPet({super.key, required this.pet, required this.onVerDetalhes});
-
-  // Função inteligente para carregar a imagem dependendo da origem
-  Widget _carregarImagem(String url) {
-    // Tratamento de erro caso a URL venha vazia por algum motivo
-    if (url.isEmpty) {
-      return Container(
-        width: 110,
-        height: 130,
-        color: Colors.grey.shade200,
-        child: const Icon(Icons.pets, size: 40, color: Colors.grey),
-      );
-    }
-
-    // Se for um pet do mock original (asset)
-    if (url.startsWith('assets/')) {
-      return Image.asset(
-        url,
-        width: 110,
-        height: 130,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Container(
-          width: 110,
-          height: 130,
-          color: Colors.grey.shade200,
-          child: const Icon(Icons.pets, size: 40, color: Colors.grey),
-        ),
-      );
-    }
-    // Se for um pet cadastrado localmente rodando na Web (Edge/Chrome)
-    else if (kIsWeb) {
-      return Image.network(
-        url,
-        width: 110,
-        height: 130,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Container(
-          width: 110,
-          height: 130,
-          color: Colors.grey.shade200,
-          child: const Icon(Icons.pets, size: 40, color: Colors.grey),
-        ),
-      );
-    }
-    // Se for um pet cadastrado localmente rodando no Windows/Android/iOS
-    else {
-      return Image.file(
-        File(url),
-        width: 110,
-        height: 130,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => Container(
-          width: 110,
-          height: 130,
-          color: Colors.grey.shade200,
-          child: const Icon(Icons.pets, size: 40, color: Colors.grey),
-        ),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,8 +24,12 @@ class CardPet extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              // Substituí o Image.asset pela função inteligente
-              child: _carregarImagem(pet.imagemUrl),
+              child: ImagemApp.carregar(
+                pet.imagemUrl,
+                width: 110,
+                height: 130,
+                placeholderIconSize: 40,
+              ),
             ),
             const SizedBox(width: 12),
 

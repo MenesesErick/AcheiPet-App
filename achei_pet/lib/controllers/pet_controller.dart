@@ -1,14 +1,14 @@
 import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/servicos/pet_service.dart';
-import 'package:achei_pet/servicos/usuario_service.dart';
+import 'package:achei_pet/servicos/sessao_service.dart';
 import 'package:uuid/uuid.dart';
 
 class PetController {
-  static List<Pet> listarPets({
+  static Future<List<Pet>> listarPets({
     StatusPet? status,
     String termoBusca = '',
-  }) {
-    final todos = PetService.getTodos();
+  }) async {
+    final todos = await PetService.getTodos();
 
     final petsPorStatus = status == null
         ? todos
@@ -27,13 +27,19 @@ class PetController {
     }).toList();
   }
 
-  static List<Pet> listarPetsDoUsuarioLogado() {
-    return PetService.getPorUsuario(
-      UsuarioService.usuarioLogadoId,
-    );
+  static Future<List<Pet>> listarPetsDoUsuarioLogado() {
+    return PetService.getPorUsuario(SessaoService.usuarioLogadoId);
   }
 
-  static Pet salvarPet({
+  static String? validarCadastroPet({required String? imagemUrl}) {
+    if (imagemUrl == null || imagemUrl.isEmpty) {
+      return 'Por favor, adicione uma foto do pet do seu computador.';
+    }
+
+    return null;
+  }
+
+  static Future<Pet> salvarPet({
     Pet? petOriginal,
     required String nome,
     String? raca,
@@ -43,10 +49,15 @@ class PetController {
     required StatusPet status,
     required String nomeDono,
     required String telefoneContato,
-  }) {
+  }) async {
+    final erroValidacao = validarCadastroPet(imagemUrl: imagemUrl);
+    if (erroValidacao != null) {
+      throw ArgumentError(erroValidacao);
+    }
+
     final pet = Pet(
       id: petOriginal?.id ?? const Uuid().v4(),
-      usuarioId: petOriginal?.usuarioId ?? UsuarioService.usuarioLogadoId,
+      usuarioId: petOriginal?.usuarioId ?? SessaoService.usuarioLogadoId,
       nome: nome.trim().isEmpty ? 'Pet sem nome' : nome.trim(),
       raca: raca == null || raca.trim().isEmpty ? null : raca.trim(),
       descricao: descricao.trim(),
@@ -61,16 +72,16 @@ class PetController {
       pet.isarId = petOriginal.isarId;
     }
 
-    PetService.salvar(pet);
+    await PetService.salvar(pet);
 
     return pet;
   }
 
-  static void deletarPet(Pet pet) {
-    PetService.deletar(pet.isarId);
+  static Future<void> deletarPet(Pet pet) async {
+    await PetService.deletar(pet.isarId);
   }
 
-  static void atualizarStatus(Pet pet, StatusPet novoStatus) {
-    PetService.atualizarStatus(pet, novoStatus);
+  static Future<void> atualizarStatus(Pet pet, StatusPet novoStatus) {
+    return PetService.atualizarStatus(pet, novoStatus);
   }
 }

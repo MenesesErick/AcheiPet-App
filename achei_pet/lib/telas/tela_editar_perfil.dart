@@ -1,13 +1,11 @@
-import 'dart:io';
-
 import 'package:achei_pet/models/usuario.dart';
 import 'package:achei_pet/controllers/usuario_controller.dart';
 import 'package:achei_pet/utils/constantes.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/widgets/botao_formatado.dart';
 import 'package:achei_pet/widgets/campo_formulario.dart';
+import 'package:achei_pet/widgets/imagem_app.dart';
 import 'package:achei_pet/widgets/texto_formatado.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -34,7 +32,9 @@ class _TelaEditarPerfilState extends State<TelaEditarPerfil> {
     super.initState();
     _nomeController = TextEditingController(text: widget.usuario.nome);
     _emailController = TextEditingController(text: widget.usuario.email);
-    _telefoneController = TextEditingController(text: widget.usuario.telefonePessoal);
+    _telefoneController = TextEditingController(
+      text: widget.usuario.telefonePessoal,
+    );
   }
 
   @override
@@ -53,37 +53,21 @@ class _TelaEditarPerfilState extends State<TelaEditarPerfil> {
     }
   }
 
-  DecorationImage? _obterImagemDeFundo() {
-    if (_novaImagem != null) {
-      if (kIsWeb) {
-        return DecorationImage(image: NetworkImage(_novaImagem!.path), fit: BoxFit.cover);
-      } else {
-        return DecorationImage(image: FileImage(File(_novaImagem!.path)), fit: BoxFit.cover);
-      }
-    }
-    final url = widget.usuario.fotoUrl;
-    if (url != null && url.isNotEmpty) {
-      if (url.startsWith('assets/')) {
-        return DecorationImage(image: AssetImage(url), fit: BoxFit.cover);
-      } else if (kIsWeb) {
-        return DecorationImage(image: NetworkImage(url), fit: BoxFit.cover);
-      } else {
-        return DecorationImage(image: FileImage(File(url)), fit: BoxFit.cover);
-      }
-    }
-    return null;
-  }
+  DecorationImage? _obterImagemDeFundo() =>
+      ImagemApp.decoration(_novaImagem?.path ?? widget.usuario.fotoUrl);
 
-  void _salvar() {
+  Future<void> _salvar() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final usuarioAtualizado = UsuarioController.atualizarPerfil(
+    final usuarioAtualizado = await UsuarioController.atualizarPerfil(
       usuarioOriginal: widget.usuario,
       nome: _nomeController.text,
       email: _emailController.text,
       telefone: _telefoneController.text,
       novaFotoUrl: _novaImagem?.path,
     );
+
+    if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -98,7 +82,8 @@ class _TelaEditarPerfilState extends State<TelaEditarPerfil> {
 
   @override
   Widget build(BuildContext context) {
-    final temImagem = _novaImagem != null ||
+    final temImagem =
+        _novaImagem != null ||
         (widget.usuario.fotoUrl != null && widget.usuario.fotoUrl!.isNotEmpty);
 
     return Scaffold(
@@ -112,7 +97,11 @@ class _TelaEditarPerfilState extends State<TelaEditarPerfil> {
             SizedBox(height: 4),
             Text(
               'Editar Perfil',
-              style: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.normal),
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+                fontWeight: FontWeight.normal,
+              ),
             ),
           ],
         ),
@@ -141,7 +130,11 @@ class _TelaEditarPerfilState extends State<TelaEditarPerfil> {
                       ),
                       child: temImagem
                           ? null
-                          : const Icon(Icons.person, size: 60, color: Cores.iconesOpacos),
+                          : const Icon(
+                              Icons.person,
+                              size: 60,
+                              color: Cores.iconesOpacos,
+                            ),
                     ),
                     Positioned(
                       bottom: 0,
@@ -154,7 +147,11 @@ class _TelaEditarPerfilState extends State<TelaEditarPerfil> {
                             color: Cores.botaoGeral,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.photo_library, color: Colors.white, size: 22),
+                          child: const Icon(
+                            Icons.photo_library,
+                            color: Colors.white,
+                            size: 22,
+                          ),
                         ),
                       ),
                     ),
@@ -167,7 +164,8 @@ class _TelaEditarPerfilState extends State<TelaEditarPerfil> {
               CampoFormulario(
                 hint: 'Nome',
                 controller: _nomeController,
-                validator: (v) => v == null || v.trim().isEmpty ? 'Informe seu nome' : null,
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Informe seu nome' : null,
               ),
               const SizedBox(height: 16),
 
@@ -175,7 +173,8 @@ class _TelaEditarPerfilState extends State<TelaEditarPerfil> {
                 hint: 'E-mail',
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                validator: (v) => v == null || v.trim().isEmpty ? 'Informe seu e-mail' : null,
+                validator: (v) =>
+                    v == null || v.trim().isEmpty ? 'Informe seu e-mail' : null,
               ),
               const SizedBox(height: 16),
 
@@ -183,7 +182,9 @@ class _TelaEditarPerfilState extends State<TelaEditarPerfil> {
                 hint: 'Telefone',
                 controller: _telefoneController,
                 keyboardType: TextInputType.phone,
-                validator: (v) => v == null || v.trim().isEmpty ? 'Informe seu telefone' : null,
+                validator: (v) => v == null || v.trim().isEmpty
+                    ? 'Informe seu telefone'
+                    : null,
               ),
 
               const SizedBox(height: 40),
