@@ -6,7 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'package:achei_pet/telas/tela_principal.dart';
+import 'package:achei_pet/telas/nav_bar.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/widgets/botao_formatado.dart';
 import 'package:achei_pet/widgets/campo_formulario.dart';

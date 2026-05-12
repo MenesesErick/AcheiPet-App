@@ -129,6 +129,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
 
       _formKey.currentState!.reset();
       setState(() {
+
         _statusSelecionado = StatusPet.PERDIDO;
         _imagemSelecionada = null;
         _nomeController.clear();

@@ -1,6 +1,6 @@
 import 'package:achei_pet/servicos/usuario_service.dart';
 import 'package:achei_pet/telas/tela_cadastro_usuario.dart';
-import 'package:achei_pet/telas/tela_principal.dart';
+import 'package:achei_pet/telas/nav_bar.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/utils/constantes.dart';
 import 'package:achei_pet/widgets/botao_formatado.dart';
