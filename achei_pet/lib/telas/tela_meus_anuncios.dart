@@ -8,8 +8,7 @@ import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/utils/constantes.dart';
 import 'package:achei_pet/widgets/texto_formatado.dart';
-import 'package:achei_pet/servicos/pet_service.dart';
-import 'package:achei_pet/servicos/usuario_service.dart';
+import 'package:achei_pet/controllers/pet_controller.dart';
 
 class TelaMeusAnuncios extends StatefulWidget {
   const TelaMeusAnuncios({super.key});
@@ -20,6 +19,7 @@ class TelaMeusAnuncios extends StatefulWidget {
 
 class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
   List<Pet> _meusAnuncios = [];
+  final _petController = PetController();
 
   // ✅ Controller para o carrossel
   late PageController _pageController;
@@ -48,7 +48,7 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
 
   void _carregarMeusAnuncios() {
     setState(() {
-      _meusAnuncios = PetService.getPorUsuario(UsuarioService.usuarioLogadoId);
+      _meusAnuncios = _petController.listarMeusPets();
     });
   }
 
@@ -121,7 +121,7 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
           ),
           TextButton(
             onPressed: () {
-              PetService.deletar(pet.isarId);
+              _petController.deletarPet(pet.isarId);
               setState(() {
                 _meusAnuncios.remove(pet);
 
@@ -170,7 +170,7 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
           ),
           TextButton(
             onPressed: () {
-              PetService.atualizarStatus(pet, novoStatus);
+              _petController.alterarStatus(pet, novoStatus);
               setState(() {
                 pet.status = novoStatus;
               });

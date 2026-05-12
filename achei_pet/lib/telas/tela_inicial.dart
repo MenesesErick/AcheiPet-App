@@ -1,4 +1,4 @@
-import 'package:achei_pet/servicos/usuario_service.dart';
+import 'package:achei_pet/controllers/usuario_controller.dart';
 import 'package:achei_pet/telas/tela_cadastro_usuario.dart';
 import 'package:achei_pet/telas/nav_bar.dart';
 import 'package:achei_pet/utils/cores.dart';
@@ -18,12 +18,13 @@ class TelaInicial extends StatefulWidget {
 class _TelaInicialState extends State<TelaInicial> {
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
+  final _usuarioController = UsuarioController();
 
   void _fazerLogin() {
     final email = _emailController.text.trim();
     final senha = _senhaController.text;
 
-    final sucesso = UsuarioService.login(email, senha);
+    final sucesso = _usuarioController.fazerLogin(email, senha);
 
     if (sucesso) {
       Navigator.pushReplacement(

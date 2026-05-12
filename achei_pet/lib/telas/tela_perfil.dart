@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:achei_pet/models/usuario.dart';
-import 'package:achei_pet/servicos/usuario_service.dart';
+import 'package:achei_pet/controllers/usuario_controller.dart';
 import 'package:achei_pet/telas/tela_editar_perfil.dart';
 import 'package:achei_pet/telas/tela_inicial.dart';
 import 'package:achei_pet/utils/cores.dart';
@@ -19,6 +19,7 @@ class TelaPerfil extends StatefulWidget {
 
 class _TelaPerfilState extends State<TelaPerfil> {
   late Usuario _usuario;
+  final _usuarioController = UsuarioController();
 
   @override
   void initState() {
@@ -28,17 +29,12 @@ class _TelaPerfilState extends State<TelaPerfil> {
 
   void _carregarUsuario() {
     setState(() {
-      _usuario = UsuarioService.buscarPorId(UsuarioService.usuarioLogadoId) ??
-          Usuario(
-            id: '0',
-            nome: 'Usuário Desconhecido',
-            email: 'erro@app.com',
-            telefonePessoal: '',
-          );
+      _usuario = _usuarioController.obterUsuarioLogado();
     });
   }
 
   void _fazerLogout(BuildContext context) {
+    _usuarioController.fazerLogout();
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const TelaInicial()),

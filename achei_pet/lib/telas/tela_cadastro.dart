@@ -1,8 +1,6 @@
 import 'dart:io';
 
-import 'package:achei_pet/servicos/pet_service.dart';
-import 'package:uuid/uuid.dart';
-import 'package:achei_pet/servicos/usuario_service.dart';
+import 'package:achei_pet/controllers/pet_controller.dart';
 import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/telas/tela_perfil.dart';
 import 'package:achei_pet/utils/constantes.dart';
@@ -32,6 +30,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
   final _localizacaoController = TextEditingController();
   final _descricaoController = TextEditingController();
   final _nomeDonoController = TextEditingController();
+  final _petController = PetController();
 
   StatusPet _statusSelecionado = StatusPet.PERDIDO;
   XFile? _imagemSelecionada;
@@ -91,12 +90,10 @@ class _TelaCadastroState extends State<TelaCadastro> {
     }
 
     if (_formKey.currentState!.validate()) {
-      final pet = widget.petParaEditar;
-      final petAtualizado = Pet(
-        id: Uuid().v4(),
-        usuarioId: pet?.usuarioId ?? UsuarioService.usuarioLogadoId,
-        nome: _nomeController.text.isEmpty ? 'Pet sem nome' : _nomeController.text,
-        raca: _racaController.text.isEmpty ? null : _racaController.text,
+      final petAtualizado = _petController.salvarPet(
+        petParaEditar: widget.petParaEditar,
+        nome: _nomeController.text,
+        raca: _racaController.text,
         descricao: _descricaoController.text,
         localizacao: _localizacaoController.text,
         imagemUrl: _imagemSelecionada?.path ?? _imagemAtualUrl!,
@@ -104,12 +101,6 @@ class _TelaCadastroState extends State<TelaCadastro> {
         nomeDono: _nomeDonoController.text,
         telefoneContato: _telefoneController.text,
       );
-
-      if (_modoEdicao) {
-        petAtualizado.isarId = pet!.isarId;
-      }
-
-      PetService.salvar(petAtualizado);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
