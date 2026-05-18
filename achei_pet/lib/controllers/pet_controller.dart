@@ -4,11 +4,12 @@ import 'package:achei_pet/servicos/usuario_service.dart';
 import 'package:uuid/uuid.dart';
 
 class PetController {
-  static List<Pet> listarPets({
+  /// Lista todos os pets, com filtro opcional de status e busca textual.
+  static Future<List<Pet>> listarPets({
     StatusPet? status,
     String termoBusca = '',
-  }) {
-    final todos = PetService.getTodos();
+  }) async {
+    final todos = await PetService.getTodos();
 
     final petsPorStatus = status == null
         ? todos
@@ -16,9 +17,7 @@ class PetController {
 
     final busca = termoBusca.trim().toLowerCase();
 
-    if (busca.isEmpty) {
-      return petsPorStatus;
-    }
+    if (busca.isEmpty) return petsPorStatus;
 
     return petsPorStatus.where((pet) {
       return pet.nome.toLowerCase().contains(busca) ||
@@ -27,13 +26,13 @@ class PetController {
     }).toList();
   }
 
-  static List<Pet> listarPetsDoUsuarioLogado() {
-    return PetService.getPorUsuario(
-      UsuarioService.usuarioLogadoId,
-    );
+  /// Lista apenas os pets do usuário atualmente logado.
+  static Future<List<Pet>> listarPetsDoUsuarioLogado() async {
+    return PetService.getPorUsuario(UsuarioService.usuarioLogadoId);
   }
 
-  static Pet salvarPet({
+  /// Cria ou atualiza um pet e o persiste no Supabase.
+  static Future<Pet> salvarPet({
     Pet? petOriginal,
     required String nome,
     String? raca,
@@ -43,7 +42,7 @@ class PetController {
     required StatusPet status,
     required String nomeDono,
     required String telefoneContato,
-  }) {
+  }) async {
     final pet = Pet(
       id: petOriginal?.id ?? const Uuid().v4(),
       usuarioId: petOriginal?.usuarioId ?? UsuarioService.usuarioLogadoId,
@@ -57,20 +56,17 @@ class PetController {
       telefoneContato: telefoneContato.trim(),
     );
 
-    if (petOriginal != null) {
-      pet.isarId = petOriginal.isarId;
-    }
-
-    PetService.salvar(pet);
-
+    await PetService.salvar(pet);
     return pet;
   }
 
-  static void deletarPet(Pet pet) {
-    PetService.deletar(pet.isarId);
+  /// Remove um pet do Supabase pelo seu UUID.
+  static Future<void> deletarPet(Pet pet) async {
+    await PetService.deletar(pet.id);
   }
 
-  static void atualizarStatus(Pet pet, StatusPet novoStatus) {
-    PetService.atualizarStatus(pet, novoStatus);
+  /// Atualiza o status de um pet no Supabase.
+  static Future<void> atualizarStatus(Pet pet, StatusPet novoStatus) async {
+    await PetService.atualizarStatus(pet, novoStatus);
   }
 }

@@ -59,7 +59,7 @@ class _TelaCadastroUsuarioState extends State<TelaCadastroUsuario> {
     return null;
   }
 
-  void _criarConta() {
+  Future<void> _criarConta() async {
     if (_formKey.currentState!.validate()) {
       // Validação extra: As senhas precisam ser iguais
       if (_senhaController.text != _confirmarSenhaController.text) {
@@ -73,13 +73,15 @@ class _TelaCadastroUsuarioState extends State<TelaCadastroUsuario> {
         return;
       }
 
-      UsuarioController.cadastrarUsuario(
+      await UsuarioController.cadastrarUsuario(
         nome: _nomeController.text,
         email: _emailController.text,
         telefone: _telefoneController.text,
         senha: _senhaController.text,
         fotoUrl: _imagemSelecionada?.path,
       );
+
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

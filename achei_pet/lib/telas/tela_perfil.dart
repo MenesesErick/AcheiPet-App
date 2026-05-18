@@ -26,9 +26,11 @@ class _TelaPerfilState extends State<TelaPerfil> {
     _carregarUsuario();
   }
 
-  void _carregarUsuario() {
+  Future<void> _carregarUsuario() async {
+    final usuario = await UsuarioController.buscarUsuarioLogado();
+    if (!mounted) return;
     setState(() {
-      _usuario = UsuarioController.buscarUsuarioLogado() ??
+      _usuario = usuario ??
           Usuario(
             id: '0',
             nome: 'Usuário Desconhecido',

@@ -19,9 +19,18 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   FiltroPet _filtroAtual = FiltroPet.TODOS;
-
   final TextEditingController _buscaController = TextEditingController();
   String _textoBusca = '';
+
+  // Lista em memória que é atualizada após cada carregamento do Supabase
+  List<Pet> _pets = [];
+  bool _carregando = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarPets();
+  }
 
   @override
   void dispose() {
@@ -29,18 +38,25 @@ class _HomePageState extends State<HomePage> {
     super.dispose();
   }
 
+  Future<void> _carregarPets() async {
+    setState(() => _carregando = true);
 
-  List<Pet> get _petsFiltrados {
     final status = switch (_filtroAtual) {
       FiltroPet.TODOS => null,
       FiltroPet.PERDIDOS => StatusPet.PERDIDO,
       FiltroPet.ENCONTRADOS => StatusPet.ENCONTRADO,
     };
 
-    return PetController.listarPets(
+    final pets = await PetController.listarPets(
       status: status,
       termoBusca: _textoBusca,
     );
+
+    if (!mounted) return;
+    setState(() {
+      _pets = pets;
+      _carregando = false;
+    });
   }
 
   void _navegarParaDetalhes(Pet pet) {
@@ -79,15 +95,17 @@ class _HomePageState extends State<HomePage> {
             CampoBusca(
               controller: _buscaController,
               onChanged: (valor) {
-                setState(() {
-                  _textoBusca = valor;
-                });
+                setState(() => _textoBusca = valor);
+                _carregarPets();
               },
             ),
             const SizedBox(height: 17),
             FiltroPets(
               selecionado: _filtroAtual,
-              onChanged: (filtro) => setState(() => _filtroAtual = filtro),
+              onChanged: (filtro) {
+                setState(() => _filtroAtual = filtro);
+                _carregarPets();
+              },
             ),
             const SizedBox(height: 29),
             const Text(
@@ -101,37 +119,43 @@ class _HomePageState extends State<HomePage> {
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
             ),
+            const SizedBox(height: 8),
             Expanded(
-              child: _petsFiltrados.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.pets_outlined, size: 80, color: Colors.grey.shade300),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Nenhum pet encontrado',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey.shade600,
+              child: _carregando
+                  ? const Center(child: CircularProgressIndicator())
+                  : _pets.isEmpty
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.pets_outlined, size: 80, color: Colors.grey.shade300),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Nenhum pet encontrado',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _textoBusca.isEmpty ? 'Não há pets cadastrados' : 'Tente outra busca',
+                                style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+                              ),
+                            ],
+                          ),
+                        )
+                      : RefreshIndicator(
+                          onRefresh: _carregarPets,
+                          child: ListView.builder(
+                            itemCount: _pets.length,
+                            itemBuilder: (context, index) => CardPet(
+                              pet: _pets[index],
+                              onVerDetalhes: () => _navegarParaDetalhes(_pets[index]),
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _textoBusca.isEmpty ? 'Não há pets cadastrados' : 'Tente outra busca',
-                            style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
-                          ),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: _petsFiltrados.length,
-                      itemBuilder: (context, index) => CardPet(
-                        pet: _petsFiltrados[index],
-                        onVerDetalhes: () => _navegarParaDetalhes(_petsFiltrados[index]),
-                      ),
-                    ),
+                        ),
             ),
           ],
         ),

@@ -3,20 +3,22 @@ import 'package:achei_pet/servicos/usuario_service.dart';
 import 'package:uuid/uuid.dart';
 
 class UsuarioController {
-  static bool fazerLogin({
+  /// Tenta fazer login e retorna true se as credenciais forem válidas.
+  static Future<bool> fazerLogin({
     required String email,
     required String senha,
-  }) {
+  }) async {
     return UsuarioService.login(email, senha);
   }
 
-  static Usuario cadastrarUsuario({
+  /// Cadastra um novo usuário e o define como sessão logada atual.
+  static Future<Usuario> cadastrarUsuario({
     required String nome,
     required String email,
     required String telefone,
     required String senha,
     String? fotoUrl,
-  }) {
+  }) async {
     final novoUsuario = Usuario(
       id: const Uuid().v4(),
       nome: nome.trim(),
@@ -26,25 +28,25 @@ class UsuarioController {
       senha: senha,
     );
 
-    UsuarioService.salvar(novoUsuario);
+    await UsuarioService.salvar(novoUsuario);
     UsuarioService.usuarioLogadoId = novoUsuario.id;
 
     return novoUsuario;
   }
 
-  static Usuario? buscarUsuarioLogado() {
-    return UsuarioService.buscarPorId(
-      UsuarioService.usuarioLogadoId,
-    );
+  /// Busca e retorna o usuário atualmente logado.
+  static Future<Usuario?> buscarUsuarioLogado() async {
+    return UsuarioService.buscarPorId(UsuarioService.usuarioLogadoId);
   }
 
-  static Usuario atualizarPerfil({
+  /// Atualiza os dados de perfil do usuário e persiste no Supabase.
+  static Future<Usuario> atualizarPerfil({
     required Usuario usuarioOriginal,
     required String nome,
     required String email,
     required String telefone,
     String? novaFotoUrl,
-  }) {
+  }) async {
     final usuarioAtualizado = Usuario(
       id: usuarioOriginal.id,
       nome: nome.trim(),
@@ -52,10 +54,9 @@ class UsuarioController {
       telefonePessoal: telefone.trim(),
       fotoUrl: novaFotoUrl ?? usuarioOriginal.fotoUrl,
       senha: usuarioOriginal.senha,
-    )..isarId = usuarioOriginal.isarId;
+    );
 
-    UsuarioService.salvar(usuarioAtualizado);
-
+    await UsuarioService.salvar(usuarioAtualizado);
     return usuarioAtualizado;
   }
 }

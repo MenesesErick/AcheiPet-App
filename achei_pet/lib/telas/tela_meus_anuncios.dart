@@ -45,9 +45,11 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
     super.dispose();
   }
 
-  void _carregarMeusAnuncios() {
+  Future<void> _carregarMeusAnuncios() async {
+    final anuncios = await PetController.listarPetsDoUsuarioLogado();
+    if (!mounted) return;
     setState(() {
-      _meusAnuncios = PetController.listarPetsDoUsuarioLogado();
+      _meusAnuncios = anuncios;
     });
   }
 
@@ -116,22 +118,21 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
             child: const Text('Cancelar'),
           ),
           TextButton(
-            onPressed: () {
-              PetController.deletarPet(pet);
+            onPressed: () async {
+              Navigator.pop(context);
+              await PetController.deletarPet(pet);
+              if (!mounted) return;
               setState(() {
                 _meusAnuncios.remove(pet);
-
                 if (_meusAnuncios.isEmpty) {
                   _paginaAtual = 0;
                 } else if (_paginaAtual >= _meusAnuncios.length) {
                   _paginaAtual = _meusAnuncios.length - 1;
                 }
-
                 if (_pageController.hasClients) {
                   _pageController.jumpToPage(_paginaAtual);
                 }
               });
-              Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Anúncio deletado com sucesso'),
@@ -165,12 +166,13 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
             child: const Text('Cancelar'),
           ),
           TextButton(
-            onPressed: () {
-              PetController.atualizarStatus(pet, novoStatus);
+            onPressed: () async {
+              Navigator.pop(context);
+              await PetController.atualizarStatus(pet, novoStatus);
+              if (!mounted) return;
               setState(() {
                 pet.status = novoStatus;
               });
-              Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('${pet.nome} marcado como $novoStatusTexto!'),

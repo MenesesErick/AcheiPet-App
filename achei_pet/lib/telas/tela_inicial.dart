@@ -19,11 +19,13 @@ class _TelaInicialState extends State<TelaInicial> {
   final _emailController = TextEditingController();
   final _senhaController = TextEditingController();
 
-  void _fazerLogin() {
+  Future<void> _fazerLogin() async {
     final email = _emailController.text.trim();
     final senha = _senhaController.text;
 
-    final sucesso = UsuarioController.fazerLogin(email: email, senha: senha);
+    final sucesso = await UsuarioController.fazerLogin(email: email, senha: senha);
+
+    if (!mounted) return;
 
     if (sucesso) {
       Navigator.pushReplacement(

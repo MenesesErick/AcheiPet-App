@@ -74,16 +74,18 @@ class _TelaEditarPerfilState extends State<TelaEditarPerfil> {
     return null;
   }
 
-  void _salvar() {
+  Future<void> _salvar() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final usuarioAtualizado = UsuarioController.atualizarPerfil(
+    final usuarioAtualizado = await UsuarioController.atualizarPerfil(
       usuarioOriginal: widget.usuario,
       nome: _nomeController.text,
       email: _emailController.text,
       telefone: _telefoneController.text,
       novaFotoUrl: _novaImagem?.path,
     );
+
+    if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
