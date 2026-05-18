@@ -1,33 +1,40 @@
-import 'package:isar/isar.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:achei_pet/models/pet.dart';
-import 'package:achei_pet/servicos/isar_service.dart';
 
 class PetService {
-  static List<Pet> getTodos() {
-    return IsarService.db.pets.where().findAllSync();
+  static final _client = Supabase.instance.client;
+
+  /// Retorna todos os pets da tabela, independente de usuário.
+  static Future<List<Pet>> getTodos() async {
+    final response = await _client.from('pets').select();
+    return (response as List).map((json) => Pet.fromJson(json)).toList();
   }
 
-  static List<Pet> getPorUsuario(String usuarioId) {
-    return IsarService.db.pets
-        .filter()
-        .usuarioIdEqualTo(usuarioId)
-        .findAllSync();
+  /// Retorna apenas os pets vinculados ao [usuarioId] informado.
+  static Future<List<Pet>> getPorUsuario(String usuarioId) async {
+    final response = await _client
+        .from('pets')
+        .select()
+        .eq('usuario_id', usuarioId);
+    return (response as List).map((json) => Pet.fromJson(json)).toList();
   }
 
-  static void salvar(Pet pet) {
-    IsarService.db.writeTxnSync(() {
-      IsarService.db.pets.putSync(pet);
-    });
+  /// Insere ou atualiza um pet (upsert por chave primária `id`).
+  static Future<void> salvar(Pet pet) async {
+    await _client.from('pets').upsert(pet.toJson());
   }
 
-  static void deletar(Id isarId) {
-    IsarService.db.writeTxnSync(() {
-      IsarService.db.pets.deleteSync(isarId);
-    });
+  /// Remove o pet com o [id] fornecido.
+  static Future<void> deletar(String id) async {
+    await _client.from('pets').delete().eq('id', id);
   }
 
-  static void atualizarStatus(Pet pet, StatusPet novoStatus) {
+  /// Atualiza apenas o campo `status` do pet informado.
+  static Future<void> atualizarStatus(Pet pet, StatusPet novoStatus) async {
     pet.status = novoStatus;
-    salvar(pet);
+    await _client
+        .from('pets')
+        .update({'status': novoStatus.name})
+        .eq('id', pet.id);
   }
 }

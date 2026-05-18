@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:achei_pet/servicos/isar_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:achei_pet/telas/tela_inicial.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await IsarService.init();
+
+  await Supabase.initialize(
+    url: 'SUA_URL_AQUI',
+    anonKey: 'SUA_ANON_KEY_AQUI',
+  );
+
   runApp(const MainApp());
 }
 

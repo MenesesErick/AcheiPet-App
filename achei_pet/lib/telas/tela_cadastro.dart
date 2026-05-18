@@ -76,7 +76,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
     }
   }
 
-  void _salvarCadastro() {
+  Future<void> _salvarCadastro() async {
     final temImagem = _imagemSelecionada != null || (_modoEdicao && _imagemAtualUrl != null && _imagemAtualUrl!.isNotEmpty);
     if (!temImagem) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -90,8 +90,8 @@ class _TelaCadastroState extends State<TelaCadastro> {
     }
 
     if (_formKey.currentState!.validate()) {
-      final petAtualizado = _petController.salvarPet(
-        petParaEditar: widget.petParaEditar,
+      final petAtualizado = await PetController.salvarPet(
+        petOriginal: widget.petParaEditar,
         nome: _nomeController.text,
         raca: _racaController.text,
         descricao: _descricaoController.text,
@@ -101,6 +101,8 @@ class _TelaCadastroState extends State<TelaCadastro> {
         nomeDono: _nomeDonoController.text,
         telefoneContato: _telefoneController.text,
       );
+
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -120,7 +122,6 @@ class _TelaCadastroState extends State<TelaCadastro> {
 
       _formKey.currentState!.reset();
       setState(() {
-
         _statusSelecionado = StatusPet.PERDIDO;
         _imagemSelecionada = null;
         _nomeController.clear();

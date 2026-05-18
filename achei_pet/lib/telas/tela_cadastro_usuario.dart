@@ -1,9 +1,8 @@
 import 'dart:io';
-import 'package:achei_pet/controllers/usuario_controller.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
+import 'package:achei_pet/controllers/usuario_controller.dart';
 import 'package:achei_pet/telas/nav_bar.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/widgets/botao_formatado.dart';
@@ -62,7 +61,7 @@ class _TelaCadastroUsuarioState extends State<TelaCadastroUsuario> {
     return null;
   }
 
-  void _criarConta() {
+  Future<void> _criarConta() async {
     if (_formKey.currentState!.validate()) {
       // Validação extra: As senhas precisam ser iguais
       if (_senhaController.text != _confirmarSenhaController.text) {
@@ -76,13 +75,15 @@ class _TelaCadastroUsuarioState extends State<TelaCadastroUsuario> {
         return;
       }
 
-      _usuarioController.cadastrarUsuario(
+      await UsuarioController.cadastrarUsuario(
         nome: _nomeController.text,
         email: _emailController.text,
         telefone: _telefoneController.text,
         senha: _senhaController.text,
         fotoUrl: _imagemSelecionada?.path,
       );
+
+      if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

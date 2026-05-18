@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:achei_pet/models/usuario.dart';
-import 'package:achei_pet/servicos/usuario_service.dart';
+import 'package:achei_pet/controllers/usuario_controller.dart';
 import 'package:achei_pet/utils/constantes.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/widgets/botao_formatado.dart';
@@ -74,19 +74,18 @@ class _TelaEditarPerfilState extends State<TelaEditarPerfil> {
     return null;
   }
 
-  void _salvar() {
+  Future<void> _salvar() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final usuarioAtualizado = Usuario(
-      id: widget.usuario.id,
-      nome: _nomeController.text.trim(),
-      email: _emailController.text.trim(),
-      telefonePessoal: _telefoneController.text.trim(),
-      fotoUrl: _novaImagem?.path ?? widget.usuario.fotoUrl,
-      senha: widget.usuario.senha,
-    )..isarId = widget.usuario.isarId;
+    final usuarioAtualizado = await UsuarioController.atualizarPerfil(
+      usuarioOriginal: widget.usuario,
+      nome: _nomeController.text,
+      email: _emailController.text,
+      telefone: _telefoneController.text,
+      novaFotoUrl: _novaImagem?.path,
+    );
 
-    UsuarioService.salvar(usuarioAtualizado);
+    if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(

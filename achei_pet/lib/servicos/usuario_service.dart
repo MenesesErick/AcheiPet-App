@@ -1,47 +1,55 @@
-import 'package:isar/isar.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:achei_pet/models/usuario.dart';
-import 'package:achei_pet/servicos/isar_service.dart';
 
 class UsuarioService {
+  static final _client = Supabase.instance.client;
+
+  /// ID do usuário atualmente logado na sessão (controle em memória).
   static String usuarioLogadoId = 'user_demo_1';
 
-  static Usuario? buscarPorId(String id) {
-    return IsarService.db.usuarios.filter().idEqualTo(id).findFirstSync();
+  /// Busca um usuário pelo seu UUID.
+  static Future<Usuario?> buscarPorId(String id) async {
+    final response = await _client
+        .from('usuarios')
+        .select()
+        .eq('id', id)
+        .maybeSingle();
+
+    if (response == null) return null;
+    return Usuario.fromJson(response);
   }
 
-  static void salvar(Usuario usuario) {
-    IsarService.db.writeTxnSync(() {
-      IsarService.db.usuarios.putSync(usuario);
-    });
+  /// Insere ou atualiza um usuário (upsert por chave primária `id`).
+  static Future<void> salvar(Usuario usuario) async {
+    await _client.from('usuarios').upsert(usuario.toJson());
   }
 
-  static List<Usuario> listarTodos() {
-    return IsarService.db.usuarios.where().findAllSync();
+  /// Lista todos os usuários cadastrados.
+  static Future<List<Usuario>> listarTodos() async {
+    final response = await _client.from('usuarios').select();
+    return (response as List).map((json) => Usuario.fromJson(json)).toList();
   }
 
-  static void debugListarTodos() {
-    final usuarios = listarTodos();
-    print('[UsuarioService] Total cadastrado: ${usuarios.length}');
-    for (final u in usuarios) {
-      print('  → id: ${u.id} | nome: ${u.nome} | email: ${u.email} | senha: ${u.senha ?? "(sem senha)"}');
-    }
-  }
-
-  static bool login(String email, String senha) {
+  /// Valida e-mail e senha contra a tabela `usuarios`.
+  /// Atualiza [usuarioLogadoId] em caso de sucesso.
+  static Future<bool> login(String email, String senha) async {
     final emailNormalizado = email.trim().toLowerCase();
 
     print('[UsuarioService] Tentando login com email: "$emailNormalizado"');
-    debugListarTodos();
 
-    final usuario = IsarService.db.usuarios
-        .filter()
-        .emailEqualTo(emailNormalizado, caseSensitive: false)
-        .findFirstSync();
+    final response = await _client
+        .from('usuarios')
+        .select()
+        .eq('email', emailNormalizado)
+        .maybeSingle();
 
-    if (usuario == null) {
+    if (response == null) {
       print('[UsuarioService] Usuário não encontrado.');
       return false;
     }
+
+    final usuario = Usuario.fromJson(response);
+
     if (usuario.senha == null || usuario.senha != senha) {
       print('[UsuarioService] Senha incorreta para "${usuario.email}".');
       return false;

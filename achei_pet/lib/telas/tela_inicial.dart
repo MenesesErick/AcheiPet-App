@@ -20,11 +20,13 @@ class _TelaInicialState extends State<TelaInicial> {
   final _senhaController = TextEditingController();
   final _usuarioController = UsuarioController();
 
-  void _fazerLogin() {
+  Future<void> _fazerLogin() async {
     final email = _emailController.text.trim();
     final senha = _senhaController.text;
 
-    final sucesso = _usuarioController.fazerLogin(email, senha);
+    final sucesso = await UsuarioController.fazerLogin(email: email, senha: senha);
+
+    if (!mounted) return;
 
     if (sucesso) {
       Navigator.pushReplacement(
@@ -66,11 +68,7 @@ class _TelaInicialState extends State<TelaInicial> {
                 const Text(
                   'Conectando pets perdidos\naos seus lares',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Cores.cinza,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 16, color: Cores.cinza, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 48),
 
@@ -81,8 +79,8 @@ class _TelaInicialState extends State<TelaInicial> {
                   keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 16),
-                
-                // NOTA: Para a senha ficar com '***', o CampoFormulario precisa ter a prop obscureText. 
+
+                // NOTA: Para a senha ficar com '***', o CampoFormulario precisa ter a prop obscureText.
                 // Por enquanto usamos TextFormField padrão para a senha.
                 TextFormField(
                   controller: _senhaController,
@@ -98,7 +96,7 @@ class _TelaInicialState extends State<TelaInicial> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
 
                 // Botão de Entrar
@@ -124,17 +122,12 @@ class _TelaInicialState extends State<TelaInicial> {
                         // Faz a navegação para a nova tela
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => const TelaCadastroUsuario(),
-                          ),
+                          MaterialPageRoute(builder: (context) => const TelaCadastroUsuario()),
                         );
                       },
                       child: const Text(
                         'Cadastre-se',
-                        style: TextStyle(
-                          color: Cores.botaoGeral,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(color: Cores.botaoGeral, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],

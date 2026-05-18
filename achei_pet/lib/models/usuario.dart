@@ -1,16 +1,6 @@
-import 'package:isar/isar.dart';
-
-part 'usuario.g.dart';
-
-@collection
 class Usuario {
-  Id isarId = Isar.autoIncrement;
-
-  @Index(unique: true)
   String id;
   String nome;
-
-  @Index(unique: true)
   String email;
   String telefonePessoal;
   String? fotoUrl;
@@ -24,4 +14,26 @@ class Usuario {
     this.fotoUrl,
     this.senha,
   });
+
+  factory Usuario.fromJson(Map<String, dynamic> json) {
+    return Usuario(
+      id: json['id'] as String,
+      nome: json['nome'] as String,
+      email: json['email'] as String,
+      telefonePessoal: json['telefone_pessoal'] as String,
+      fotoUrl: json['foto_url'] as String?,
+      senha: json['senha'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'nome': nome,
+      'email': email,
+      'telefone_pessoal': telefonePessoal,
+      'foto_url': fotoUrl,
+      'senha': senha,
+    };
+  }
 }
