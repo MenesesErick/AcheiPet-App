@@ -1,5 +1,6 @@
 import 'package:achei_pet/models/usuario.dart';
 import 'package:achei_pet/servicos/usuario_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 class UsuarioController {
@@ -19,17 +20,38 @@ class UsuarioController {
     required String senha,
     String? fotoUrl,
   }) async {
-    final novoUsuario = Usuario(
-      id: const Uuid().v4(),
-      nome: nome.trim(),
-      email: email.trim().toLowerCase(),
-      telefonePessoal: telefone.trim(),
-      fotoUrl: fotoUrl,
-      senha: senha,
+    final emailNormalizado = email.trim().toLowerCase();
+
+    // 1. Cadastra o usuário no cofre de autenticação (auth) do Supabase
+    final authResponse = await Supabase.instance.client.auth.signUp(
+      email: emailNormalizado,
+      password: senha,
     );
 
-    await UsuarioService.salvar(novoUsuario);
-    UsuarioService.usuarioLogadoId = novoUsuario.id;
+    final user = authResponse.user;
+    if (user == null) {
+      throw Exception('Não foi possível registrar o usuário na autenticação do Supabase.');
+    }
+
+    // 2. Cria o objeto de perfil utilizando o UUID gerado pelo auth do Supabase
+    final novoUsuario = Usuario(
+      id: user.id,
+      nome: nome.trim(),
+      email: emailNormalizado,
+      telefonePessoal: telefone.trim(),
+      fotoUrl: fotoUrl,
+    );
+
+    // 3. Salva o perfil na tabela pública public.usuarios
+    try {
+      await UsuarioService.salvar(novoUsuario);
+    } catch (e) {
+      print('Erro ao salvar o perfil do usuário: $e');
+      rethrow;
+    }
+
+    // 4. Atualiza a sessão local
+    UsuarioService.usuarioLogadoId = user.id;
 
     return novoUsuario;
   }
@@ -58,5 +80,16 @@ class UsuarioController {
 
     await UsuarioService.salvar(usuarioAtualizado);
     return usuarioAtualizado;
+  }
+
+  /// Desloga o usuário do Supabase e limpa a sessão local.
+  Future<void> fazerLogout() async {
+    try {
+      await Supabase.instance.client.auth.signOut();
+    } catch (e) {
+      print('Erro ao realizar logout: $e');
+    } finally {
+      UsuarioService.usuarioLogadoId = '';
+    }
   }
 }

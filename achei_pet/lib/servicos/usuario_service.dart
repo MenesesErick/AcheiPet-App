@@ -30,33 +30,29 @@ class UsuarioService {
     return (response as List).map((json) => Usuario.fromJson(json)).toList();
   }
 
-  /// Valida e-mail e senha contra a tabela `usuarios`.
+  /// Valida e-mail e senha contra a autenticação do Supabase.
   /// Atualiza [usuarioLogadoId] em caso de sucesso.
   static Future<bool> login(String email, String senha) async {
     final emailNormalizado = email.trim().toLowerCase();
 
-    print('[UsuarioService] Tentando login com email: "$emailNormalizado"');
+    print('[UsuarioService] Tentando login com email: "$emailNormalizado" via Supabase Auth');
 
-    final response = await _client
-        .from('usuarios')
-        .select()
-        .eq('email', emailNormalizado)
-        .maybeSingle();
+    try {
+      final response = await _client.auth.signInWithPassword(
+        email: emailNormalizado,
+        password: senha,
+      );
 
-    if (response == null) {
-      print('[UsuarioService] Usuário não encontrado.');
-      return false;
+      final user = response.user;
+      if (user != null) {
+        usuarioLogadoId = user.id;
+        print('[UsuarioService] Login bem-sucedido: ${user.email}');
+        return true;
+      }
+    } catch (e) {
+      print('[UsuarioService] Erro ao fazer login no Supabase Auth: $e');
     }
 
-    final usuario = Usuario.fromJson(response);
-
-    if (usuario.senha == null || usuario.senha != senha) {
-      print('[UsuarioService] Senha incorreta para "${usuario.email}".');
-      return false;
-    }
-
-    usuarioLogadoId = usuario.id;
-    print('[UsuarioService] Login bem-sucedido: ${usuario.nome}');
-    return true;
+    return false;
   }
 }

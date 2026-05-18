@@ -41,13 +41,15 @@ class _TelaPerfilState extends State<TelaPerfil> {
     });
   }
 
-  void _fazerLogout(BuildContext context) {
-    _usuarioController.fazerLogout();
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const TelaInicial()),
-      (route) => false,
-    );
+  Future<void> _fazerLogout(BuildContext context) async {
+    await _usuarioController.fazerLogout();
+    if (context.mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const TelaInicial()),
+        (route) => false,
+      );
+    }
   }
 
   Future<void> _editarPerfil() async {

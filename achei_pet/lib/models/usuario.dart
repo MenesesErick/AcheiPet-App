@@ -33,7 +33,6 @@ class Usuario {
       'email': email,
       'telefone_pessoal': telefonePessoal,
       'foto_url': fotoUrl,
-      'senha': senha,
     };
   }
 }
