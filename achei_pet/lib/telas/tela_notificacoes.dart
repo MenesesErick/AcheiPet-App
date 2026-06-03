@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:achei_pet/models/notificacao.dart';
 import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/servicos/pet_service.dart';
@@ -17,11 +19,45 @@ class _TelaNotificacoesState extends State<TelaNotificacoes> {
   List<Notificacao> _notificacoes = [];
   bool _carregando = true;
   String? _notificacaoAbrindoId;
+  StreamSubscription<List<Map<String, dynamic>>>? _notificacoesSubscription;
 
   @override
   void initState() {
     super.initState();
     _carregarNotificacoes();
+    _assinarNotificacoes();
+  }
+
+  @override
+  void dispose() {
+    _notificacoesSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _assinarNotificacoes() {
+    final usuarioId = UsuarioService.usuarioLogadoId;
+    if (usuarioId.isEmpty) return;
+
+    _notificacoesSubscription = Supabase.instance.client
+        .from('notificacoes')
+        .stream(primaryKey: ['id'])
+        .eq('usuario_id', usuarioId)
+        .order('created_at', ascending: false)
+        .listen(
+          (rows) {
+            if (!mounted) return;
+            setState(() {
+              _notificacoes = rows
+                  .map((json) => Notificacao.fromJson(json))
+                  .toList();
+              _carregando = false;
+            });
+          },
+          onError: (_) {
+            if (!mounted) return;
+            setState(() => _carregando = false);
+          },
+        );
   }
 
   Future<void> _carregarNotificacoes() async {

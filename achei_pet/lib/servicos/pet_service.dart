@@ -86,49 +86,64 @@ class PetService {
   }
 
   /// Insere ou atualiza um pet (upsert por chave primária `id`).
-  static Future<void> salvar(Pet pet) async {
+  static Future<void> salvar(Pet pet, {bool gerarNotificacoes = true}) async {
     await _client.from('pets').upsert(pet.toJson());
 
+    if (!gerarNotificacoes) return;
+
     try {
-      // Pega a lat/lon do pet recém cadastrado. Se for nulo, ignora a notificação.
-      if (_coordenadaValida(pet.latitude, pet.longitude)) {
-        // 1. Busca todos os usuários
-        final usuarios = await Supabase.instance.client
-            .from('usuarios')
-            .select();
+      final usuarios = await Supabase.instance.client.from('usuarios').select();
+      final notificacoes = <Map<String, dynamic>>[];
 
-        for (var u in usuarios) {
-          // 2. Ignora o próprio dono do anúncio
-          if (u['id'] == pet.usuarioId) continue;
+      for (final usuario in usuarios) {
+        final usuarioId = usuario['id'] as String?;
+        if (usuarioId == null || usuarioId == pet.usuarioId) continue;
 
-          // 3. Pega a lat/lon do usuário ou usa o centro de Palmas (Praça dos Girassóis) como fallback do protótipo
-          final userLat = (u['latitude'] as num?)?.toDouble();
-          final userLon = (u['longitude'] as num?)?.toDouble();
-          if (!_coordenadaValida(userLat, userLon)) continue;
+        notificacoes.add({
+          'usuario_id': usuarioId,
+          'pet_id': pet.id,
+          'mensagem': _montarMensagemNotificacao(pet, usuario),
+          'lida': false,
+        });
+      }
 
-          // 4. Calcula a distância
-          final distancia = _calcularDistancia(
-            pet.latitude!,
-            pet.longitude!,
-            userLat!,
-            userLon!,
-          );
-
-          // 5. Se estiver no raio de 2km, dispara a notificação no banco
-          if (distancia <= 2.0) {
-            await Supabase.instance.client.from('notificacoes').insert({
-              'usuario_id': u['id'],
-              'pet_id': pet.id,
-              'mensagem':
-                  'Alerta de Proximidade: ${pet.nome} foi perdido a ${distancia.toStringAsFixed(1)} km de você. Verifique no app!',
-              'lida': false,
-            });
-          }
-        }
+      if (notificacoes.isNotEmpty) {
+        await Supabase.instance.client
+            .from('notificacoes')
+            .insert(notificacoes);
       }
     } catch (e) {
-      debugPrint('Erro ao gerar notificações de proximidade: $e');
+      debugPrint('Erro ao gerar notificações de novo cadastro: $e');
     }
+  }
+
+  static String _montarMensagemNotificacao(
+    Pet pet,
+    Map<String, dynamic> usuario,
+  ) {
+    final userLat = (usuario['latitude'] as num?)?.toDouble();
+    final userLon = (usuario['longitude'] as num?)?.toDouble();
+
+    if (pet.status == StatusPet.PERDIDO &&
+        _coordenadaValida(pet.latitude, pet.longitude) &&
+        _coordenadaValida(userLat, userLon)) {
+      final distancia = _calcularDistancia(
+        pet.latitude!,
+        pet.longitude!,
+        userLat!,
+        userLon!,
+      );
+
+      if (distancia <= 2.0) {
+        return 'Alerta de Proximidade: ${pet.nome} foi perdido a ${distancia.toStringAsFixed(1)} km de você. Verifique no app!';
+      }
+    }
+
+    final statusTexto = pet.status == StatusPet.PERDIDO
+        ? 'perdido'
+        : 'encontrado';
+
+    return 'Novo anúncio: ${pet.nome} foi cadastrado como $statusTexto. Verifique no app!';
   }
 
   /// Remove o pet com o [id] fornecido.

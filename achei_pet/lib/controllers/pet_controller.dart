@@ -60,7 +60,7 @@ class PetController {
       longitude: longitude,
     );
 
-    await PetService.salvar(pet);
+    await PetService.salvar(pet, gerarNotificacoes: petOriginal == null);
     return pet;
   }
 

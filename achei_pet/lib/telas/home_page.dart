@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/controllers/pet_controller.dart';
 import 'package:achei_pet/servicos/usuario_service.dart';
@@ -11,6 +13,7 @@ import 'package:achei_pet/widgets/filtro_pet.dart';
 import 'package:achei_pet/widgets/texto_formatado.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -29,18 +32,39 @@ class _HomePageState extends State<HomePage> {
   bool _carregando = true;
   bool _temNotificacaoNaoLida = false;
   Position? _minhaPosicao;
+  StreamSubscription<List<Map<String, dynamic>>>? _notificacoesSubscription;
 
   @override
   void initState() {
     super.initState();
     _carregarPets();
     _carregarStatusNotificacoes();
+    _assinarStatusNotificacoes();
   }
 
   @override
   void dispose() {
+    _notificacoesSubscription?.cancel();
     _buscaController.dispose();
     super.dispose();
+  }
+
+  void _assinarStatusNotificacoes() {
+    final usuarioId = UsuarioService.usuarioLogadoId;
+    if (usuarioId.isEmpty) return;
+
+    _notificacoesSubscription = Supabase.instance.client
+        .from('notificacoes')
+        .stream(primaryKey: ['id'])
+        .eq('usuario_id', usuarioId)
+        .listen((rows) {
+          if (!mounted) return;
+          setState(() {
+            _temNotificacaoNaoLida = rows.any(
+              (row) => (row['lida'] as bool?) != true,
+            );
+          });
+        });
   }
 
   Future<void> _carregarPets() async {

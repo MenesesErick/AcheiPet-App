@@ -5,6 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/utils/cores.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class TelaDetalhesPet extends StatelessWidget {
   final Pet pet;
@@ -75,6 +76,49 @@ class TelaDetalhesPet extends StatelessWidget {
         ),
       );
     }
+  }
+
+  Future<void> _abrirWhatsApp(BuildContext context) async {
+    final telefone = _normalizarTelefoneWhatsApp(pet.telefoneContato);
+
+    if (telefone == null) {
+      _mostrarMensagem(context, 'Telefone de contato inválido.');
+      return;
+    }
+
+    final mensagem = Uri.encodeComponent(
+      'Olá! Vi o anúncio do pet ${pet.nome} no AcheiPet e gostaria de conversar.',
+    );
+    final uri = Uri.parse('https://wa.me/$telefone?text=$mensagem');
+
+    final abriu = await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    ).catchError((_) => false);
+
+    if (!abriu && context.mounted) {
+      _mostrarMensagem(context, 'Não foi possível abrir o WhatsApp.');
+    }
+  }
+
+  String? _normalizarTelefoneWhatsApp(String telefone) {
+    var digitos = telefone.replaceAll(RegExp(r'\D'), '');
+    digitos = digitos.replaceFirst(RegExp(r'^0+'), '');
+
+    if (digitos.isEmpty) return null;
+
+    if (digitos.length == 10 || digitos.length == 11) {
+      digitos = '55$digitos';
+    }
+
+    if (digitos.length < 12 || digitos.length > 13) return null;
+    return digitos;
+  }
+
+  void _mostrarMensagem(BuildContext context, String mensagem) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(mensagem)));
   }
 
   @override
@@ -159,7 +203,9 @@ class TelaDetalhesPet extends StatelessWidget {
                   _buildInfoSection(
                     icon: Icons.pets_outlined,
                     titulo: 'Raça',
-                    conteudo: pet.raca ?? 'Não informada', // Lidando com a possibilidade de null
+                    conteudo:
+                        pet.raca ??
+                        'Não informada', // Lidando com a possibilidade de null
                   ),
 
                   const SizedBox(height: 16),
@@ -187,7 +233,9 @@ class TelaDetalhesPet extends StatelessWidget {
                           onPressed: () {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Funcionalidade de compartilhamento em desenvolvimento'),
+                                content: Text(
+                                  'Funcionalidade de compartilhamento em desenvolvimento',
+                                ),
                               ),
                             );
                           },
@@ -203,14 +251,8 @@ class TelaDetalhesPet extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Funcionalidade de contato em desenvolvimento'),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.phone),
+                          onPressed: () => _abrirWhatsApp(context),
+                          icon: const Icon(Icons.chat),
                           label: const Text('Contatar'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Cores.botaoGeral,
@@ -272,7 +314,8 @@ class TelaDetalhesPet extends StatelessWidget {
                 ),
                 children: [
                   TileLayer(
-                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                     userAgentPackageName: 'com.example.acheipet',
                   ),
                   MarkerLayer(
@@ -290,7 +333,10 @@ class TelaDetalhesPet extends StatelessWidget {
                               height: 40,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.red, width: 2.5),
+                                border: Border.all(
+                                  color: Colors.red,
+                                  width: 2.5,
+                                ),
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withOpacity(0.3),
@@ -304,18 +350,32 @@ class TelaDetalhesPet extends StatelessWidget {
                                     ? Image.network(
                                         pet.imagemUrl,
                                         fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) => Container(
-                                          color: Colors.white,
-                                          child: const Icon(Icons.pets, color: Colors.red, size: 20),
-                                        ),
+                                        errorBuilder:
+                                            (context, error, stackTrace) =>
+                                                Container(
+                                                  color: Colors.white,
+                                                  child: const Icon(
+                                                    Icons.pets,
+                                                    color: Colors.red,
+                                                    size: 20,
+                                                  ),
+                                                ),
                                       )
                                     : Container(
                                         color: Colors.white,
-                                        child: const Icon(Icons.pets, color: Colors.red, size: 20),
+                                        child: const Icon(
+                                          Icons.pets,
+                                          color: Colors.red,
+                                          size: 20,
+                                        ),
                                       ),
                               ),
                             ),
-                            const Icon(Icons.arrow_drop_down, color: Colors.red, size: 20),
+                            const Icon(
+                              Icons.arrow_drop_down,
+                              color: Colors.red,
+                              size: 20,
+                            ),
                           ],
                         ),
                       ),
@@ -327,8 +387,14 @@ class TelaDetalhesPet extends StatelessWidget {
           )
         else
           Text(
-            pet.localizacao.isNotEmpty ? pet.localizacao : 'Localização não informada no mapa',
-            style: const TextStyle(fontSize: 14, color: Colors.grey, height: 1.5),
+            pet.localizacao.isNotEmpty
+                ? pet.localizacao
+                : 'Localização não informada no mapa',
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.grey,
+              height: 1.5,
+            ),
           ),
       ],
     );
@@ -359,11 +425,7 @@ class TelaDetalhesPet extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           conteudo,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.grey,
-            height: 1.5,
-          ),
+          style: const TextStyle(fontSize: 14, color: Colors.grey, height: 1.5),
         ),
       ],
     );
