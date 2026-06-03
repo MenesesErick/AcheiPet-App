@@ -37,11 +37,13 @@ class PetController {
     required String nome,
     String? raca,
     required String descricao,
-    required String localizacao,
+    String localizacao = '',
     required String imagemUrl,
     required StatusPet status,
     required String nomeDono,
     required String telefoneContato,
+    double? latitude,
+    double? longitude,
   }) async {
     final pet = Pet(
       id: petOriginal?.id ?? const Uuid().v4(),
@@ -54,6 +56,8 @@ class PetController {
       status: status,
       nomeDono: nomeDono.trim(),
       telefoneContato: telefoneContato.trim(),
+      latitude: latitude,
+      longitude: longitude,
     );
 
     await PetService.salvar(pet);

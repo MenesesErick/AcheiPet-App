@@ -11,6 +11,8 @@ class Pet {
   StatusPet status;
   String nomeDono;
   String telefoneContato;
+  final double? latitude;
+  final double? longitude;
 
   Pet({
     required this.id,
@@ -23,6 +25,8 @@ class Pet {
     required this.status,
     required this.nomeDono,
     required this.telefoneContato,
+    this.latitude,
+    this.longitude,
   });
 
   factory Pet.fromJson(Map<String, dynamic> json) {
@@ -39,6 +43,8 @@ class Pet {
           : StatusPet.PERDIDO,
       nomeDono: json['nome_dono'] as String,
       telefoneContato: json['telefone_contato'] as String,
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
     );
   }
 
@@ -54,6 +60,8 @@ class Pet {
       'status': status.name, // 'PERDIDO' ou 'ENCONTRADO'
       'nome_dono': nomeDono,
       'telefone_contato': telefoneContato,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 }

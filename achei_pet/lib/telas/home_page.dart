@@ -1,6 +1,8 @@
+import 'dart:math' as math;
 import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/controllers/pet_controller.dart';
 import 'package:achei_pet/telas/tela_detalhes_pet.dart';
+import 'package:achei_pet/telas/tela_notificacoes.dart';
 import 'package:achei_pet/telas/tela_perfil.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/utils/constantes.dart';
@@ -56,8 +58,25 @@ class _HomePageState extends State<HomePage> {
     if (!mounted) return;
     setState(() {
       _pets = pets;
+      _pets.sort((a, b) {
+        final distA = _calcularDistancia(a.latitude, a.longitude, -10.1843, -48.3336);
+        final distB = _calcularDistancia(b.latitude, b.longitude, -10.1843, -48.3336);
+        return distA.compareTo(distB);
+      });
       _carregando = false;
     });
+  }
+
+  double _calcularDistancia(double? lat1, double? lon1, double lat2, double lon2) {
+    if (lat1 == null || lon1 == null) return 9999.0;
+    const R = 6371.0;
+    final dLat = (lat2 - lat1) * math.pi / 180.0;
+    final dLon = (lon2 - lon1) * math.pi / 180.0;
+    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(lat1 * math.pi / 180.0) * math.cos(lat2 * math.pi / 180.0) *
+        math.sin(dLon / 2) * math.sin(dLon / 2);
+    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    return R * c;
   }
 
   void _navegarParaDetalhes(Pet pet) {
@@ -79,10 +98,10 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const TelaPerfil()),
+                  MaterialPageRoute(builder: (context) => const TelaNotificacoes()),
                 );
               },
-              icon: const Icon(Icons.account_circle_outlined, size: 50, color: Colors.black),
+              icon: const Icon(Icons.notifications_outlined, size: 50, color: Colors.black),
             ),
           ),
         ],

@@ -4,6 +4,8 @@ import 'package:achei_pet/telas/tela_detalhes_pet.dart';
 import 'package:achei_pet/telas/tela_perfil.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/utils/constantes.dart';
@@ -544,14 +546,51 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
           children: [
             const Icon(Icons.location_on_outlined, size: 18, color: Cores.botaoGeral),
             const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                petAtual.localizacao,
-                style: const TextStyle(fontSize: 13, color: Cores.cinza),
-              ),
-            ),
+            const Text('Localização', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87)),
           ],
         ),
+        if (petAtual.latitude != null && petAtual.longitude != null)
+          Container(
+            height: 120,
+            width: double.infinity,
+            margin: const EdgeInsets.only(top: 8, bottom: 8),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: AbsorbPointer(
+                child: FlutterMap(
+                  options: MapOptions(
+                    initialCenter: LatLng(petAtual.latitude!, petAtual.longitude!),
+                    initialZoom: 14.0,
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      userAgentPackageName: 'com.example.acheipet',
+                    ),
+                    MarkerLayer(
+                      markers: [
+                        Marker(
+                          point: LatLng(petAtual.latitude!, petAtual.longitude!),
+                          width: 30,
+                          height: 30,
+                          child: const Icon(Icons.location_on, color: Colors.red, size: 30),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )
+        else
+          Text(
+            petAtual.localizacao.isNotEmpty ? petAtual.localizacao : 'Localização não informada no mapa',
+            style: const TextStyle(color: Colors.grey, fontSize: 13),
+          ),
 
         const SizedBox(height: 12),
 

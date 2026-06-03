@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:achei_pet/models/pet.dart';
 import 'package:achei_pet/utils/cores.dart';
 
@@ -128,11 +130,7 @@ class TelaDetalhesPet extends StatelessWidget {
 
                   const SizedBox(height: 20),
 
-                  _buildInfoSection(
-                    icon: Icons.location_on_outlined,
-                    titulo: 'Localização',
-                    conteudo: pet.localizacao,
-                  ),
+                  _buildLocalizacaoSection(),
 
                   const SizedBox(height: 16),
 
@@ -217,6 +215,108 @@ class TelaDetalhesPet extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildLocalizacaoSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.location_on_outlined, color: Cores.botaoGeral, size: 20),
+            const SizedBox(width: 8),
+            const Text(
+              'Localização',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        if (pet.latitude != null && pet.longitude != null)
+          Container(
+            height: 200,
+            width: double.infinity,
+            margin: const EdgeInsets.only(top: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300, width: 2),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: FlutterMap(
+                options: MapOptions(
+                  initialCenter: LatLng(pet.latitude!, pet.longitude!),
+                  initialZoom: 15.0,
+                  interactionOptions: const InteractionOptions(
+                    flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+                  ),
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.example.acheipet',
+                  ),
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: LatLng(pet.latitude!, pet.longitude!),
+                        width: 60,
+                        height: 60,
+                        alignment: Alignment.topCenter,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.red, width: 2.5),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: ClipOval(
+                                child: pet.imagemUrl.startsWith('http')
+                                    ? Image.network(
+                                        pet.imagemUrl,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) => Container(
+                                          color: Colors.white,
+                                          child: const Icon(Icons.pets, color: Colors.red, size: 20),
+                                        ),
+                                      )
+                                    : Container(
+                                        color: Colors.white,
+                                        child: const Icon(Icons.pets, color: Colors.red, size: 20),
+                                      ),
+                              ),
+                            ),
+                            const Icon(Icons.arrow_drop_down, color: Colors.red, size: 20),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          Text(
+            pet.localizacao.isNotEmpty ? pet.localizacao : 'Localização não informada no mapa',
+            style: const TextStyle(fontSize: 14, color: Colors.grey, height: 1.5),
+          ),
+      ],
     );
   }
 

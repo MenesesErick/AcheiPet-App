@@ -9,6 +9,7 @@ import 'package:achei_pet/telas/tela_inicial.dart';
 import 'package:achei_pet/utils/cores.dart';
 import 'package:achei_pet/widgets/texto_formatado.dart';
 import 'package:achei_pet/widgets/item_menu_perfil.dart';
+import 'package:achei_pet/telas/tela_notificacoes.dart';
 
 class TelaPerfil extends StatefulWidget {
   const TelaPerfil({super.key});
@@ -158,7 +159,12 @@ class _TelaPerfilState extends State<TelaPerfil> {
             ItemMenuPerfil(
               icone: Icons.notifications_outlined,
               titulo: 'Notificações',
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const TelaNotificacoes()),
+                );
+              },
             ),
             ItemMenuPerfil(
               icone: Icons.security_outlined,

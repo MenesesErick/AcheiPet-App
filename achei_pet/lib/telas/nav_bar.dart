@@ -6,6 +6,7 @@ import 'package:achei_pet/utils/cores.dart';
 // Importe as telas que já existem
 import 'package:achei_pet/telas/home_page.dart';
 import 'package:achei_pet/telas/tela_cadastro.dart';
+import 'package:achei_pet/telas/tela_mapa_geral.dart';
 
 class TelaPrincipal extends StatefulWidget {
   const TelaPrincipal({super.key});
@@ -23,6 +24,7 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
     const HomePage(),
     const TelaCadastro(),
     const TelaMeusAnuncios(),
+    const TelaMapaGeral(),
     const TelaPerfil(),
   ];
 
@@ -96,6 +98,17 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
                 child: Icon(Icons.article, size: 28),
               ),
               label: 'Meus Anúncios',
+            ),
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: EdgeInsets.only(bottom: 4),
+                child: Icon(Icons.map_outlined, size: 28),
+              ),
+              activeIcon: Padding(
+                padding: EdgeInsets.only(bottom: 4),
+                child: Icon(Icons.map, size: 28),
+              ),
+              label: 'Mapa',
             ),
             BottomNavigationBarItem(
               icon: Padding(

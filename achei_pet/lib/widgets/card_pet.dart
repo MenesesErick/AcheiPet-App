@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart'; // Necessário para usar o kIsWeb
 import 'package:achei_pet/utils/cores.dart';
 import 'package:flutter/material.dart';
@@ -69,6 +70,28 @@ class CardPet extends StatelessWidget {
     }
   }
 
+  String _obterTextoDistancia() {
+    if (pet.latitude != null && pet.longitude != null) {
+      const latUsuario = -10.1843; // Coordenada base do usuário
+      const lonUsuario = -48.3336;
+      const R = 6371.0;
+      
+      final dLat = (latUsuario - pet.latitude!) * math.pi / 180.0;
+      final dLon = (lonUsuario - pet.longitude!) * math.pi / 180.0;
+      
+      final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+          math.cos(pet.latitude! * math.pi / 180.0) * math.cos(latUsuario * math.pi / 180.0) *
+          math.sin(dLon / 2) * math.sin(dLon / 2);
+          
+      final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+      final distancia = R * c;
+      
+      return 'A ${distancia.toStringAsFixed(1)} km de você';
+    }
+    
+    return pet.localizacao.isNotEmpty ? pet.localizacao : 'Localização desconhecida';
+  }
+
   @override
   Widget build(BuildContext context) {
     final isPerdido = pet.status == StatusPet.PERDIDO;
@@ -133,7 +156,7 @@ class CardPet extends StatelessWidget {
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          pet.localizacao,
+                          _obterTextoDistancia(),
                           style: const TextStyle(color: Cores.cinza),
                           overflow: TextOverflow.ellipsis,
                         ),

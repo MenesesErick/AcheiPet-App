@@ -10,7 +10,9 @@ import 'package:achei_pet/widgets/campo_formulario.dart';
 import 'package:achei_pet/widgets/texto_formatado.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:latlong2/latlong.dart';
 
 class TelaCadastro extends StatefulWidget {
   final Pet? petParaEditar;
@@ -27,10 +29,11 @@ class _TelaCadastroState extends State<TelaCadastro> {
   final _nomeController = TextEditingController();
   final _racaController = TextEditingController();
   final _telefoneController = TextEditingController();
-  final _localizacaoController = TextEditingController();
   final _descricaoController = TextEditingController();
   final _nomeDonoController = TextEditingController();
   final _petController = PetController();
+
+  LatLng? _localizacaoSelecionada;
 
   StatusPet _statusSelecionado = StatusPet.PERDIDO;
   XFile? _imagemSelecionada;
@@ -46,11 +49,13 @@ class _TelaCadastroState extends State<TelaCadastro> {
       _nomeController.text = pet.nome;
       _racaController.text = pet.raca ?? '';
       _telefoneController.text = pet.telefoneContato;
-      _localizacaoController.text = pet.localizacao;
       _descricaoController.text = pet.descricao;
       _nomeDonoController.text = pet.nomeDono;
       _statusSelecionado = pet.status;
       _imagemAtualUrl = pet.imagemUrl;
+      if (pet.latitude != null && pet.longitude != null) {
+        _localizacaoSelecionada = LatLng(pet.latitude!, pet.longitude!);
+      }
     }
   }
 
@@ -59,7 +64,6 @@ class _TelaCadastroState extends State<TelaCadastro> {
     _nomeController.dispose();
     _racaController.dispose();
     _telefoneController.dispose();
-    _localizacaoController.dispose();
     _descricaoController.dispose();
     _nomeDonoController.dispose();
     super.dispose();
@@ -90,12 +94,22 @@ class _TelaCadastroState extends State<TelaCadastro> {
     }
 
     if (_formKey.currentState!.validate()) {
+      if (_localizacaoSelecionada == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Por favor, marque o local no mapa.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
       final petAtualizado = await PetController.salvarPet(
         petOriginal: widget.petParaEditar,
         nome: _nomeController.text,
         raca: _racaController.text,
         descricao: _descricaoController.text,
-        localizacao: _localizacaoController.text,
+        latitude: _localizacaoSelecionada!.latitude,
+        longitude: _localizacaoSelecionada!.longitude,
         imagemUrl: _imagemSelecionada?.path ?? _imagemAtualUrl!,
         status: _statusSelecionado,
         nomeDono: _nomeDonoController.text,
@@ -124,10 +138,10 @@ class _TelaCadastroState extends State<TelaCadastro> {
       setState(() {
         _statusSelecionado = StatusPet.PERDIDO;
         _imagemSelecionada = null;
+        _localizacaoSelecionada = null;
         _nomeController.clear();
         _racaController.clear();
         _telefoneController.clear();
-        _localizacaoController.clear();
         _descricaoController.clear();
         _nomeDonoController.clear();
       });
@@ -275,10 +289,48 @@ class _TelaCadastroState extends State<TelaCadastro> {
 
               const SizedBox(height: 16),
 
-              CampoFormulario(
-                hint: 'Localização (Ex: Taquaralto, Palmas - TO)',
-                controller: _localizacaoController,
-                validator: (value) => value!.isEmpty ? 'Informe onde foi visto/perdido' : null,
+              const Text(
+                'Marque no mapa onde o pet foi visto/perdido:',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                height: 250,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300, width: 2),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: FlutterMap(
+                    options: MapOptions(
+                      initialCenter: const LatLng(-10.1843, -48.3336),
+                      initialZoom: 13.0,
+                      onTap: (tapPosition, point) {
+                        setState(() {
+                          _localizacaoSelecionada = point;
+                        });
+                      },
+                    ),
+                    children: [
+                      TileLayer(
+                        urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.acheipet',
+                      ),
+                      if (_localizacaoSelecionada != null)
+                        MarkerLayer(
+                          markers: [
+                            Marker(
+                              point: _localizacaoSelecionada!,
+                              width: 40,
+                              height: 40,
+                              child: const Icon(Icons.location_on, color: Colors.red, size: 40),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
 
