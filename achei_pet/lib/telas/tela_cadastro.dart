@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:achei_pet/controllers/pet_controller.dart';
 import 'package:achei_pet/models/pet.dart';
@@ -38,6 +39,7 @@ class _TelaCadastroState extends State<TelaCadastro> {
   StatusPet _statusSelecionado = StatusPet.PERDIDO;
   XFile? _imagemSelecionada;
   String? _imagemAtualUrl;
+  bool _isUploading = false;
 
   bool get _modoEdicao => widget.petParaEditar != null;
 
@@ -70,13 +72,17 @@ class _TelaCadastroState extends State<TelaCadastro> {
   }
 
   Future<void> _escolherImagem() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? imagem = await picker.pickImage(source: ImageSource.gallery);
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? imagem = await picker.pickImage(source: ImageSource.gallery);
 
-    if (imagem != null) {
-      setState(() {
-        _imagemSelecionada = imagem;
-      });
+      if (imagem != null) {
+        setState(() {
+          _imagemSelecionada = imagem;
+        });
+      }
+    } catch (e) {
+      debugPrint('Erro ao abrir a galeria: $e');
     }
   }
 
@@ -103,48 +109,87 @@ class _TelaCadastroState extends State<TelaCadastro> {
         );
         return;
       }
-      final petAtualizado = await PetController.salvarPet(
-        petOriginal: widget.petParaEditar,
-        nome: _nomeController.text,
-        raca: _racaController.text,
-        descricao: _descricaoController.text,
-        latitude: _localizacaoSelecionada!.latitude,
-        longitude: _localizacaoSelecionada!.longitude,
-        imagemUrl: _imagemSelecionada?.path ?? _imagemAtualUrl!,
-        status: _statusSelecionado,
-        nomeDono: _nomeDonoController.text,
-        telefoneContato: _telefoneController.text,
-      );
 
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            _modoEdicao ? 'Anúncio atualizado com sucesso!' : 'Pet cadastrado com sucesso!',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          backgroundColor: Cores.verdeEncontrado,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-
-      if (_modoEdicao) {
-        Navigator.pop(context, petAtualizado);
-        return;
-      }
-
-      _formKey.currentState!.reset();
       setState(() {
-        _statusSelecionado = StatusPet.PERDIDO;
-        _imagemSelecionada = null;
-        _localizacaoSelecionada = null;
-        _nomeController.clear();
-        _racaController.clear();
-        _telefoneController.clear();
-        _descricaoController.clear();
-        _nomeDonoController.clear();
+        _isUploading = true;
       });
+
+      try {
+        // Lógica de Upload para o Supabase
+        String imagemUrlFinal = _imagemAtualUrl ?? '';
+        if (_imagemSelecionada != null) {
+          final extensao = _imagemSelecionada!.path.split('.').last;
+          final nomeArquivo = '${DateTime.now().millisecondsSinceEpoch}.$extensao';
+
+          // Lê o arquivo como bytes para evitar erros de I/O em diferentes plataformas
+          final fileBytes = await _imagemSelecionada!.readAsBytes();
+
+          await Supabase.instance.client.storage
+              .from('imagens')
+              .uploadBinary(nomeArquivo, fileBytes);
+
+          imagemUrlFinal = Supabase.instance.client.storage
+              .from('imagens')
+              .getPublicUrl(nomeArquivo);
+        }
+
+        final petAtualizado = await PetController.salvarPet(
+          petOriginal: widget.petParaEditar,
+          nome: _nomeController.text,
+          raca: _racaController.text,
+          descricao: _descricaoController.text,
+          latitude: _localizacaoSelecionada!.latitude,
+          longitude: _localizacaoSelecionada!.longitude,
+          imagemUrl: imagemUrlFinal,
+          status: _statusSelecionado,
+          nomeDono: _nomeDonoController.text,
+          telefoneContato: _telefoneController.text,
+        );
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _modoEdicao ? 'Anúncio atualizado com sucesso!' : 'Pet cadastrado com sucesso!',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            backgroundColor: Cores.verdeEncontrado,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+        if (_modoEdicao) {
+          Navigator.pop(context, petAtualizado);
+          return;
+        }
+
+        _formKey.currentState!.reset();
+        setState(() {
+          _statusSelecionado = StatusPet.PERDIDO;
+          _imagemSelecionada = null;
+          _localizacaoSelecionada = null;
+          _nomeController.clear();
+          _racaController.clear();
+          _telefoneController.clear();
+          _descricaoController.clear();
+          _nomeDonoController.clear();
+        });
+      } catch (e) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao salvar anúncio: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isUploading = false;
+          });
+        }
+      }
     }
   }
 
@@ -343,13 +388,15 @@ class _TelaCadastroState extends State<TelaCadastro> {
               const SizedBox(height: 40),
 
               Center(
-                child: BotaoFormatado(
-                  texto: _modoEdicao ? 'Salvar Alterações' : 'Salvar Cadastro',
-                  largura: 250,
-                  altura: 55,
-                  tamanhoFonte: 18,
-                  onPressed: _salvarCadastro,
-                ),
+                child: _isUploading
+                    ? const CircularProgressIndicator()
+                    : BotaoFormatado(
+                        texto: _modoEdicao ? 'Salvar Alterações' : 'Salvar Cadastro',
+                        largura: 250,
+                        altura: 55,
+                        tamanhoFonte: 18,
+                        onPressed: _salvarCadastro,
+                      ),
               ),
               const SizedBox(height: 30),
             ],
