@@ -1,5 +1,6 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:achei_pet/models/usuario.dart';
+import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class UsuarioService {
   static final _client = Supabase.instance.client;
@@ -24,6 +25,31 @@ class UsuarioService {
     await _client.from('usuarios').upsert(usuario.toJson());
   }
 
+  static Future<void> atualizarLocalizacao({
+    required double latitude,
+    required double longitude,
+  }) async {
+    try {
+      await _client
+          .from('usuarios')
+          .update({'latitude': latitude, 'longitude': longitude})
+          .eq('id', usuarioLogadoId);
+    } catch (e) {
+      debugPrint('Erro ao atualizar localização do usuário: $e');
+    }
+  }
+
+  static Future<bool> temNotificacaoNaoLida() async {
+    final response = await _client
+        .from('notificacoes')
+        .select('id')
+        .eq('usuario_id', usuarioLogadoId)
+        .eq('lida', false)
+        .limit(1);
+
+    return (response as List).isNotEmpty;
+  }
+
   /// Lista todos os usuários cadastrados.
   static Future<List<Usuario>> listarTodos() async {
     final response = await _client.from('usuarios').select();
@@ -35,7 +61,9 @@ class UsuarioService {
   static Future<bool> login(String email, String senha) async {
     final emailNormalizado = email.trim().toLowerCase();
 
-    print('[UsuarioService] Tentando login com email: "$emailNormalizado" via Supabase Auth');
+    debugPrint(
+      '[UsuarioService] Tentando login com email: "$emailNormalizado" via Supabase Auth',
+    );
 
     try {
       final response = await _client.auth.signInWithPassword(
@@ -46,11 +74,11 @@ class UsuarioService {
       final user = response.user;
       if (user != null) {
         usuarioLogadoId = user.id;
-        print('[UsuarioService] Login bem-sucedido: ${user.email}');
+        debugPrint('[UsuarioService] Login bem-sucedido: ${user.email}');
         return true;
       }
     } catch (e) {
-      print('[UsuarioService] Erro ao fazer login no Supabase Auth: $e');
+      debugPrint('[UsuarioService] Erro ao fazer login no Supabase Auth: $e');
     }
 
     return false;

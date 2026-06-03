@@ -1,6 +1,7 @@
-import 'dart:math' as math;
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:achei_pet/models/pet.dart';
+import 'package:flutter/foundation.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class PetService {
   static final _client = Supabase.instance.client;
@@ -20,39 +21,113 @@ class PetService {
     return (response as List).map((json) => Pet.fromJson(json)).toList();
   }
 
+  static Future<Pet?> getPorId(String id) async {
+    final response = await _client
+        .from('pets')
+        .select()
+        .eq('id', id)
+        .maybeSingle();
+
+    if (response == null) return null;
+
+    return Pet.fromJson(response);
+  }
+
+  static Future<Pet?> getPetPerdidoMaisProximoDoUsuario(
+    String usuarioId, {
+    double raioKm = 2.0,
+    double userLat = -10.1843,
+    double userLon = -48.3336,
+    double? distanciaAlvoKm,
+  }) async {
+    if (!_coordenadaValida(userLat, userLon)) return null;
+
+    final pets = await getTodos();
+    Pet? petMaisProximo;
+    double? menorDistancia;
+    final petsComDistanciaAlvo = <Pet>[];
+
+    for (final pet in pets) {
+      if (pet.status != StatusPet.PERDIDO ||
+          !_coordenadaValida(pet.latitude, pet.longitude) ||
+          pet.usuarioId == usuarioId) {
+        continue;
+      }
+
+      final distancia = _calcularDistancia(
+        pet.latitude!,
+        pet.longitude!,
+        userLat,
+        userLon,
+      );
+
+      if (distancia > raioKm) continue;
+
+      if (distanciaAlvoKm != null) {
+        final diferenca = (distancia - distanciaAlvoKm).abs();
+        if (diferenca <= 0.05) {
+          petsComDistanciaAlvo.add(pet);
+        }
+      }
+
+      if (menorDistancia == null || distancia < menorDistancia) {
+        menorDistancia = distancia;
+        petMaisProximo = pet;
+      }
+    }
+
+    if (distanciaAlvoKm != null) {
+      return petsComDistanciaAlvo.length == 1
+          ? petsComDistanciaAlvo.first
+          : null;
+    }
+
+    return petMaisProximo;
+  }
+
   /// Insere ou atualiza um pet (upsert por chave primária `id`).
   static Future<void> salvar(Pet pet) async {
     await _client.from('pets').upsert(pet.toJson());
 
     try {
       // Pega a lat/lon do pet recém cadastrado. Se for nulo, ignora a notificação.
-      if (pet.latitude != null && pet.longitude != null) {
+      if (_coordenadaValida(pet.latitude, pet.longitude)) {
         // 1. Busca todos os usuários
-        final usuarios = await Supabase.instance.client.from('usuarios').select();
-        
+        final usuarios = await Supabase.instance.client
+            .from('usuarios')
+            .select();
+
         for (var u in usuarios) {
           // 2. Ignora o próprio dono do anúncio
           if (u['id'] == pet.usuarioId) continue;
-          
+
           // 3. Pega a lat/lon do usuário ou usa o centro de Palmas (Praça dos Girassóis) como fallback do protótipo
-          final double userLat = u['latitude'] != null ? (u['latitude'] as num).toDouble() : -10.1843;
-          final double userLon = u['longitude'] != null ? (u['longitude'] as num).toDouble() : -48.3336;
-          
+          final userLat = (u['latitude'] as num?)?.toDouble();
+          final userLon = (u['longitude'] as num?)?.toDouble();
+          if (!_coordenadaValida(userLat, userLon)) continue;
+
           // 4. Calcula a distância
-          final distancia = _calcularDistancia(pet.latitude!, pet.longitude!, userLat, userLon);
-          
-          // 5. Se estiver no raio de 10km, dispara a notificação no banco
-          if (distancia <= 10.0) {
+          final distancia = _calcularDistancia(
+            pet.latitude!,
+            pet.longitude!,
+            userLat!,
+            userLon!,
+          );
+
+          // 5. Se estiver no raio de 2km, dispara a notificação no banco
+          if (distancia <= 2.0) {
             await Supabase.instance.client.from('notificacoes').insert({
               'usuario_id': u['id'],
-              'mensagem': 'Alerta de Proximidade: Um pet foi perdido a ${distancia.toStringAsFixed(1)} km de você. Verifique no app!',
+              'pet_id': pet.id,
+              'mensagem':
+                  'Alerta de Proximidade: ${pet.nome} foi perdido a ${distancia.toStringAsFixed(1)} km de você. Verifique no app!',
               'lida': false,
             });
           }
         }
       }
     } catch (e) {
-      print('Erro ao gerar notificações de proximidade: $e');
+      debugPrint('Erro ao gerar notificações de proximidade: $e');
     }
   }
 
@@ -70,14 +145,23 @@ class PetService {
         .eq('id', pet.id);
   }
 
-  static double _calcularDistancia(double lat1, double lon1, double lat2, double lon2) {
-    const R = 6371.0; // Raio da Terra em KM
-    final dLat = (lat2 - lat1) * math.pi / 180.0;
-    final dLon = (lon2 - lon1) * math.pi / 180.0;
-    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
-        math.cos(lat1 * math.pi / 180.0) * math.cos(lat2 * math.pi / 180.0) *
-        math.sin(dLon / 2) * math.sin(dLon / 2);
-    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
-    return R * c;
+  static double _calcularDistancia(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
+    return Geolocator.distanceBetween(lat1, lon1, lat2, lon2) / 1000;
+  }
+
+  static bool _coordenadaValida(double? latitude, double? longitude) {
+    return latitude != null &&
+        longitude != null &&
+        latitude.isFinite &&
+        longitude.isFinite &&
+        latitude >= -90 &&
+        latitude <= 90 &&
+        longitude >= -180 &&
+        longitude <= 180;
   }
 }

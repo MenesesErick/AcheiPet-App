@@ -128,7 +128,9 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Deletar Anúncio?'),
-        content: Text('Tem certeza que deseja deletar o anúncio de ${pet.nome}?'),
+        content: Text(
+          'Tem certeza que deseja deletar o anúncio de ${pet.nome}?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -166,11 +168,15 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
   }
 
   void _alterarStatus(Pet pet) {
-    final novoStatus =
-        pet.status == StatusPet.PERDIDO ? StatusPet.ENCONTRADO : StatusPet.PERDIDO;
-    final novoStatusTexto = novoStatus == StatusPet.PERDIDO ? 'Perdido' : 'Encontrado';
-    final corStatus =
-        novoStatus == StatusPet.ENCONTRADO ? Cores.verdeEncontrado : Cores.vermehoPerdido;
+    final novoStatus = pet.status == StatusPet.PERDIDO
+        ? StatusPet.ENCONTRADO
+        : StatusPet.PERDIDO;
+    final novoStatusTexto = novoStatus == StatusPet.PERDIDO
+        ? 'Perdido'
+        : 'Encontrado';
+    final corStatus = novoStatus == StatusPet.ENCONTRADO
+        ? Cores.verdeEncontrado
+        : Cores.vermehoPerdido;
 
     showDialog(
       context: context,
@@ -243,7 +249,11 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                   MaterialPageRoute(builder: (context) => const TelaPerfil()),
                 );
               },
-              icon: const Icon(Icons.account_circle_outlined, size: 50, color: Colors.black),
+              icon: const Icon(
+                Icons.account_circle_outlined,
+                size: 50,
+                color: Colors.black,
+              ),
             ),
           ),
         ],
@@ -259,7 +269,11 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.announcement_outlined, size: 120, color: Colors.grey.shade300),
+          Icon(
+            Icons.announcement_outlined,
+            size: 120,
+            color: Colors.grey.shade300,
+          ),
           const SizedBox(height: 20),
           Text(
             'Nenhum anúncio criado',
@@ -278,7 +292,10 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
           const SizedBox(height: 40),
           ElevatedButton.icon(
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => TelaCadastro()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => TelaCadastro()),
+              );
             },
             icon: const Icon(Icons.add),
             label: const Text('Criar Anúncio'),
@@ -310,12 +327,18 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                   children: [
                     const Text(
                       'Meus Anúncios',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${_meusAnuncios.length} anúncio${_meusAnuncios.length > 1 ? 's' : ''}',
-                      style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade600,
+                      ),
                     ),
                   ],
                 ),
@@ -331,7 +354,10 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Cores.botaoGeral,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
                   ),
                 ),
               ],
@@ -372,7 +398,9 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                       width: _paginaAtual == index ? 30 : 10,
                       height: 10,
                       decoration: BoxDecoration(
-                        color: _paginaAtual == index ? Cores.botaoGeral : Colors.grey.shade300,
+                        color: _paginaAtual == index
+                            ? Cores.botaoGeral
+                            : Colors.grey.shade300,
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
@@ -413,7 +441,9 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         child: Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           elevation: 4,
           child: Stack(
             children: [
@@ -437,9 +467,14 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                 top: 12,
                 right: 12,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: isPerdido ? Cores.vermehoPerdido : Cores.verdeEncontrado,
+                    color: isPerdido
+                        ? Cores.vermehoPerdido
+                        : Cores.verdeEncontrado,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
@@ -470,7 +505,10 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.7),
+                      ],
                     ),
                     borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(16),
@@ -492,7 +530,10 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                       const SizedBox(height: 4),
                       Text(
                         pet.raca ?? 'Raça não especificada',
-                        style: const TextStyle(fontSize: 13, color: Colors.white70),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.white70,
+                        ),
                       ),
                     ],
                   ),
@@ -523,7 +564,10 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
                 children: [
                   Text(
                     petAtual.nome,
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -544,7 +588,9 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
               child: Text(
                 isPerdido ? 'Perdido' : 'Encontrado',
                 style: TextStyle(
-                  color: isPerdido ? Cores.vermehoPerdido : Cores.verdeEncontrado,
+                  color: isPerdido
+                      ? Cores.vermehoPerdido
+                      : Cores.verdeEncontrado,
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
                 ),
@@ -558,9 +604,20 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
         // Localização
         Row(
           children: [
-            const Icon(Icons.location_on_outlined, size: 18, color: Cores.botaoGeral),
+            const Icon(
+              Icons.location_on_outlined,
+              size: 18,
+              color: Cores.botaoGeral,
+            ),
             const SizedBox(width: 8),
-            const Text('Localização', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87)),
+            const Text(
+              'Localização',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
           ],
         ),
         if (petAtual.latitude != null && petAtual.longitude != null)
@@ -574,35 +631,46 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(6),
-              child: AbsorbPointer(
-                child: FlutterMap(
-                  options: MapOptions(
-                    initialCenter: LatLng(petAtual.latitude!, petAtual.longitude!),
-                    initialZoom: 14.0,
+              child: FlutterMap(
+                options: MapOptions(
+                  initialCenter: LatLng(
+                    petAtual.latitude!,
+                    petAtual.longitude!,
                   ),
-                  children: [
-                    TileLayer(
-                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      userAgentPackageName: 'com.example.acheipet',
-                    ),
-                    MarkerLayer(
-                      markers: [
-                        Marker(
-                          point: LatLng(petAtual.latitude!, petAtual.longitude!),
-                          width: 30,
-                          height: 30,
-                          child: const Icon(Icons.location_on, color: Colors.red, size: 30),
-                        ),
-                      ],
-                    ),
-                  ],
+                  initialZoom: 14.0,
+                  interactionOptions: const InteractionOptions(
+                    flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+                  ),
                 ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.example.acheipet',
+                  ),
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: LatLng(petAtual.latitude!, petAtual.longitude!),
+                        width: 30,
+                        height: 30,
+                        child: const Icon(
+                          Icons.location_on,
+                          color: Colors.red,
+                          size: 30,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           )
         else
           Text(
-            petAtual.localizacao.isNotEmpty ? petAtual.localizacao : 'Localização não informada no mapa',
+            petAtual.localizacao.isNotEmpty
+                ? petAtual.localizacao
+                : 'Localização não informada no mapa',
             style: const TextStyle(color: Colors.grey, fontSize: 13),
           ),
 
@@ -629,10 +697,14 @@ class _TelaMeusAnunciosState extends State<TelaMeusAnuncios> {
               isPerdido ? 'Marcar como Encontrado' : 'Marcar como Perdido',
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: isPerdido ? Cores.verdeEncontrado : Cores.vermehoPerdido,
+              backgroundColor: isPerdido
+                  ? Cores.verdeEncontrado
+                  : Cores.vermehoPerdido,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
           ),
         ),

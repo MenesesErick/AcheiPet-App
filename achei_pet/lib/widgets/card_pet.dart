@@ -1,15 +1,23 @@
 import 'dart:io';
-import 'dart:math' as math;
 import 'package:flutter/foundation.dart'; // Necessário para usar o kIsWeb
 import 'package:achei_pet/utils/cores.dart';
 import 'package:flutter/material.dart';
 import 'package:achei_pet/models/pet.dart';
+import 'package:geolocator/geolocator.dart';
 
 class CardPet extends StatelessWidget {
   final Pet pet;
   final VoidCallback? onVerDetalhes;
+  final double? usuarioLatitude;
+  final double? usuarioLongitude;
 
-  const CardPet({super.key, required this.pet, required this.onVerDetalhes});
+  const CardPet({
+    super.key,
+    required this.pet,
+    required this.onVerDetalhes,
+    this.usuarioLatitude,
+    this.usuarioLongitude,
+  });
 
   // Função inteligente para carregar a imagem dependendo da origem
   Widget _carregarImagem(String url) {
@@ -86,25 +94,27 @@ class CardPet extends StatelessWidget {
   }
 
   String _obterTextoDistancia() {
-    if (pet.latitude != null && pet.longitude != null) {
-      const latUsuario = -10.1843; // Coordenada base do usuário
-      const lonUsuario = -48.3336;
-      const R = 6371.0;
-      
-      final dLat = (latUsuario - pet.latitude!) * math.pi / 180.0;
-      final dLon = (lonUsuario - pet.longitude!) * math.pi / 180.0;
-      
-      final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
-          math.cos(pet.latitude! * math.pi / 180.0) * math.cos(latUsuario * math.pi / 180.0) *
-          math.sin(dLon / 2) * math.sin(dLon / 2);
-          
-      final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
-      final distancia = R * c;
-      
-      return 'A ${distancia.toStringAsFixed(1)} km de você';
+    if (pet.latitude != null &&
+        pet.longitude != null &&
+        usuarioLatitude != null &&
+        usuarioLongitude != null) {
+      final distancia = Geolocator.distanceBetween(
+        usuarioLatitude!,
+        usuarioLongitude!,
+        pet.latitude!,
+        pet.longitude!,
+      );
+
+      if (distancia < 1000) {
+        return 'A ${distancia.round()} m de você';
+      }
+
+      return 'A ${(distancia / 1000).toStringAsFixed(1)} km de você';
     }
-    
-    return pet.localizacao.isNotEmpty ? pet.localizacao : 'Localização desconhecida';
+
+    return pet.localizacao.isNotEmpty
+        ? pet.localizacao
+        : 'Localização desconhecida';
   }
 
   @override
