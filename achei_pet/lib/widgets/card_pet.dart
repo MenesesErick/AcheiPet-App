@@ -38,6 +38,21 @@ class CardPet extends StatelessWidget {
         ),
       );
     }
+    // Se for uma URL da nuvem (Supabase Storage ou qualquer link HTTP)
+    else if (url.startsWith('http')) {
+      return Image.network(
+        url,
+        width: 110,
+        height: 130,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Container(
+          width: 110,
+          height: 130,
+          color: Colors.grey.shade200,
+          child: const Icon(Icons.pets, size: 40, color: Colors.grey),
+        ),
+      );
+    }
     // Se for um pet cadastrado localmente rodando na Web (Edge/Chrome)
     else if (kIsWeb) {
       return Image.network(
@@ -53,7 +68,7 @@ class CardPet extends StatelessWidget {
         ),
       );
     }
-    // Se for um pet cadastrado localmente rodando no Windows/Android/iOS
+    // Se for um pet cadastrado localmente rodando no Windows/Android/iOS (caminho local legado)
     else {
       return Image.file(
         File(url),

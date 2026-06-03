@@ -19,9 +19,7 @@ class TelaDetalhesPet extends StatelessWidget {
         color: Colors.grey.shade200,
         child: const Icon(Icons.pets, size: 80, color: Colors.grey),
       );
-    }
-
-    if (url.startsWith('assets/')) {
+    } else if (url.startsWith('assets/')) {
       return Image.asset(
         url,
         width: double.infinity,
@@ -34,7 +32,22 @@ class TelaDetalhesPet extends StatelessWidget {
           child: const Icon(Icons.pets, size: 80, color: Colors.grey),
         ),
       );
+    } else if (url.startsWith('http')) {
+      // URL da nuvem (Supabase Storage ou qualquer link HTTP)
+      return Image.network(
+        url,
+        width: double.infinity,
+        height: 300,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Container(
+          width: double.infinity,
+          height: 300,
+          color: Colors.grey.shade200,
+          child: const Icon(Icons.pets, size: 80, color: Colors.grey),
+        ),
+      );
     } else if (kIsWeb) {
+      // Caminho relativo rodando na Web
       return Image.network(
         url,
         width: double.infinity,
@@ -48,6 +61,7 @@ class TelaDetalhesPet extends StatelessWidget {
         ),
       );
     } else {
+      // Caminho local legado (Windows/Android/iOS)
       return Image.file(
         File(url),
         width: double.infinity,
